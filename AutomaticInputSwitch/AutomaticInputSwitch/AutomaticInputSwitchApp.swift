@@ -1,32 +1,24 @@
-//
-//  AutomaticInputSwitchApp.swift
-//  AutomaticInputSwitch
-//
-//  Created by Jim Zhou on 3/18/25.
-//
-
 import SwiftUI
 import SwiftData
+import AppKit
 
 @main
 struct AutomaticInputSwitchApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(sharedModelContainer)
+        .defaultSize(width: 600, height: 600)
+    }
+    
+    init() {
+        // Prevent multiple instances
+        let runningApps = NSWorkspace.shared.runningApplications.filter { $0.bundleIdentifier == Bundle.main.bundleIdentifier }
+        if runningApps.count > 1 {
+            // If there is already an instance running, exit the new one
+            NSApplication.shared.terminate(nil)
+        }
     }
 }
