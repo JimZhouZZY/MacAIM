@@ -78,12 +78,27 @@ struct ContentView: View {
 
                 HStack {
                     Image(systemName: "magnifyingglass")
+                        .resizable()
+                        .frame(width: 18, height: 18)
                         .foregroundColor(.gray)
                         .padding(.leading, 8)
 
                     TextField("Search for an app", text: $searchText)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(8)
+                    
+                    Button(action: {
+                        openSettingsWindow()
+                    }) {
+                        Image(systemName: "gearshape.fill")
+                            .resizable()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(.gray)
+                            .padding(8)
+                            .background(Color(NSColor.controlBackgroundColor))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
             }
             .frame(height: 36)
@@ -280,6 +295,16 @@ struct ContentView: View {
     func switchInputSource(to inputSource: TISInputSource) {
         TISSelectInputSource(inputSource)
         return
+    }
+    
+    func openSettingsWindow() {
+        let show = UserDefaults.standard.object(forKey: "showStatusBarIcon") as! Bool
+        UserDefaults.standard.set(!show, forKey: "showStatusBarIcon")
+        if show {
+            UserDefaults.standard.set(true, forKey: "_hideStatusBarIcon")
+        } else {
+            UserDefaults.standard.set(true, forKey: "_showStatusBarIcon")
+        }
     }
 }
 

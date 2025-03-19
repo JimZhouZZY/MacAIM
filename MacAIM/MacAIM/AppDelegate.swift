@@ -21,10 +21,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let startAtLoginKey = "startAtLogin"
     let silentStartKey = "silentStart"
     let debugModeKey = "debugMode"
+    let showStatusBarIconKey = "showStatusBarIcon"
     
     var debugMode: Bool = false
     var startWithSystem: Bool = false
     var silentStart: Bool = false
+    var showStatusBarIcon: Bool = false
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Hide dock icon
@@ -37,6 +39,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             UserDefaults.standard.set(false, forKey: silentStartKey)
             UserDefaults.standard.set(false, forKey: startAtLoginKey)
             UserDefaults.standard.set(false, forKey: debugModeKey)
+            UserDefaults.standard.set(true, forKey: showStatusBarIconKey)
+            UserDefaults.standard.set(false, forKey: "_showDashboard")
+            UserDefaults.standard.set(false, forKey: "_showStatusBarIcon")
+            UserDefaults.standard.set(false, forKey: "_hideStatusBarIcon")
         }
         
         // Initialize the window
@@ -62,43 +68,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         // Set up the status bar
-        statusBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        if let statusBarItem = statusBarItem {
-            statusBarItem.button?.title = "🖥"
-            let menu = NSMenu()
-            
-            // Add "Dashboard" option to the menu
-            let showWindowItem = NSMenuItem(title: "Dashboard", action: #selector(showWindow), keyEquivalent: "w")
-            menu.addItem(showWindowItem)
-            // Set action for the status bar button to show dashboard
-            statusBarItem.button?.action = #selector(showWindow)
-            
-            // Check if the user wants the app to start with the system
-            startWithSystem = UserDefaults.standard.bool(forKey: startAtLoginKey)
-            registerStartAtLogin(startWithSystem: startWithSystem)
-            // Add "Start with System" checkbox to the menu
-            let startWithSystemItem = NSMenuItem(title: "Start at login", action: #selector(toggleStartWithSystem), keyEquivalent: "a")
-            startWithSystemItem.state = startWithSystem ? .on : .off
-            menu.addItem(startWithSystemItem)
-            
-            // Add "Silent start" checkbox to the menu
-            // silentStart have been set by previous code
-            let silentStartItem = NSMenuItem(title: "Silent start", action: #selector(toggleSilentStart), keyEquivalent: "s")
-            silentStartItem.state = silentStart ? .on : .off
-            menu.addItem(silentStartItem)
-            
-            // Add "Debug mode" checkbox to the menu
-            debugMode = UserDefaults.standard.bool(forKey: debugModeKey)
-            let debugModeItem = NSMenuItem(title: "Debug mode", action: #selector(toggleDebugMode), keyEquivalent: "d")
-            debugModeItem.state = debugMode ? .on : .off
-            menu.addItem(debugModeItem)
-            
-            // Add "Quit" option to the menu
-            let quitItem = NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q")
-            menu.addItem(quitItem)
-            
-            // Finally
-            statusBarItem.menu = menu
+        showStatusBarIcon = UserDefaults.standard.bool(forKey: showStatusBarIconKey)
+        if showStatusBarIcon {
+            createStatusBarItem()
         }
         
         // Set up the menu bar
@@ -191,10 +163,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         while true {
             if let _showDashboard = UserDefaults.standard.object(forKey: "_showDashboard") {
                 if _showDashboard as! Bool {
-                    print("AHA")
+                    print("_showDashboard")
                     DispatchQueue.main.async {
                         self.showWindow()
                         UserDefaults.standard.set(false, forKey: "_showDashboard")
+                    }
+                }
+            }
+            if let _showStatusBarIcon = UserDefaults.standard.object(forKey: "_showStatusBarIcon") {
+                if _showStatusBarIcon as! Bool {
+                    print("_showStatusBarIcon")
+                    DispatchQueue.main.async {
+                        self.createStatusBarItem()
+                        UserDefaults.standard.set(false, forKey: "_showStatusBarIcon")
+                    }
+                }
+            }
+            if let _hideStatusBarIcon = UserDefaults.standard.object(forKey: "_hideStatusBarIcon") {
+                if _hideStatusBarIcon as! Bool {
+                    print("_hideStatusBarIcon")
+                    DispatchQueue.main.async {
+                        self.removeStatusBarItem()
+                        UserDefaults.standard.set(false, forKey: "_hideStatusBarIcon")
                     }
                 }
             }
@@ -210,6 +200,54 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationDidResignActive(_ notification: Notification) {
         print("App lost focus")
+    }
+    
+    func removeStatusBarItem() {
+        if let item = statusBarItem {
+            NSStatusBar.system.removeStatusItem(item)
+            statusBarItem = nil
+        }
+    }
+    
+    func createStatusBarItem() {
+        statusBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        if let statusBarItem = statusBarItem {
+            statusBarItem.button?.title = "🖥"
+            let menu = NSMenu()
+            
+            // Add "Dashboard" option to the menu
+            let showWindowItem = NSMenuItem(title: "Dashboard", action: #selector(showWindow), keyEquivalent: "w")
+            menu.addItem(showWindowItem)
+            // Set action for the status bar button to show dashboard
+            statusBarItem.button?.action = #selector(showWindow)
+            
+            // Check if the user wants the app to start with the system
+            startWithSystem = UserDefaults.standard.bool(forKey: startAtLoginKey)
+            registerStartAtLogin(startWithSystem: startWithSystem)
+            // Add "Start with System" checkbox to the menu
+            let startWithSystemItem = NSMenuItem(title: "Start at login", action: #selector(toggleStartWithSystem), keyEquivalent: "a")
+            startWithSystemItem.state = startWithSystem ? .on : .off
+            menu.addItem(startWithSystemItem)
+            
+            // Add "Silent start" checkbox to the menu
+            // silentStart have been set by previous code
+            let silentStartItem = NSMenuItem(title: "Silent start", action: #selector(toggleSilentStart), keyEquivalent: "s")
+            silentStartItem.state = silentStart ? .on : .off
+            menu.addItem(silentStartItem)
+            
+            // Add "Debug mode" checkbox to the menu
+            debugMode = UserDefaults.standard.bool(forKey: debugModeKey)
+            let debugModeItem = NSMenuItem(title: "Debug mode", action: #selector(toggleDebugMode), keyEquivalent: "d")
+            debugModeItem.state = debugMode ? .on : .off
+            menu.addItem(debugModeItem)
+            
+            // Add "Quit" option to the menu
+            let quitItem = NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q")
+            menu.addItem(quitItem)
+            
+            // Finally
+            statusBarItem.menu = menu
+        }
     }
 }
 
