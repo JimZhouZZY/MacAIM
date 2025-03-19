@@ -167,7 +167,10 @@ struct ContentView: View {
             let appURLs = try fileManager.contentsOfDirectory(at: applicationsURL, includingPropertiesForKeys: nil)
             apps = appURLs
                 .filter { $0.pathExtension == "app" }
-                .map { $0.deletingPathExtension().lastPathComponent }
+                .compactMap { url -> String? in
+                    let values = try? url.resourceValues(forKeys: [.localizedNameKey])
+                    return values?.localizedName
+                }
             
             for appName in apps {
                 if appNameToInputSource[appName] == nil {
