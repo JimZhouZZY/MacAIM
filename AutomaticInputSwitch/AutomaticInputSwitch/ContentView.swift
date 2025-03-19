@@ -7,17 +7,20 @@ import Cocoa
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    
+    @AppStorage("debugMode") var debugMode: Bool = false
+    
     @State private var apps: [String] = []
     @State private var currentAppName: String? = nil
     @State private var selectedApp: String?  // Store the selected app
     @State private var searchText: String = ""  // Search text for filtering
     @State private var appNameToInputSource: [String: TISInputSource?] = [:]
-    @State private var inputSources = TISCreateInputSourceList(nil, false).takeRetainedValue() as! [TISInputSource]
-    @State private var recognizedInputSources = TISCreateInputSourceList(nil, false)
-                                                    .takeRetainedValue() as! [TISInputSource]
     @State private var sortOption: SortOption = .name
     @State private var appAddedDates: [String: Date] = [:]
     @State private var isReversed: Bool = false // Added state variable for reverse sorting
+    @State private var inputSources = TISCreateInputSourceList(nil, false).takeRetainedValue() as! [TISInputSource]
+    @State private var recognizedInputSources = TISCreateInputSourceList(nil, false)
+                                                    .takeRetainedValue() as! [TISInputSource]
 
     enum SortOption: String, CaseIterable {
         case name = "Name"
@@ -122,11 +125,19 @@ struct ContentView: View {
                             saveInputMethods()
                         }
                     )) {
-                        // TODO: sort it
-                        ForEach(recognizedInputSources, id: \.self) { inputSource in
-                            Text(inputMethodNames[getInputMethodName(inputSource)] ??
-                                 ("Unrecognized: " + getInputMethodName(inputSource)))
-                            .tag(inputSource)
+                        if !debugMode {
+                            // TODO: sort it
+                            ForEach(recognizedInputSources, id: \.self) { inputSource in
+                                Text(inputMethodNames[getInputMethodName(inputSource)] ??
+                                     ("Unrecognized: " + getInputMethodName(inputSource)))
+                                .tag(inputSource)
+                            }
+                        } else {
+                            ForEach(inputSources, id: \.self) { inputSource in
+                                Text(inputMethodNames[getInputMethodName(inputSource)] ??
+                                     ("Unrecognized: " + getInputMethodName(inputSource)))
+                                .tag(inputSource)
+                            }
                         }
                     }
                     .pickerStyle(MenuPickerStyle()) // Dropdown menu

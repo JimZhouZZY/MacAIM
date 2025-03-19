@@ -18,6 +18,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let useDefaultKey = "useDefault"
     let startAtLoginKey = "startAtLogin"
     let silentStartKey = "silentStart"
+    let debugModeKey = "debugMode"
+    
+    var debugMode: Bool = false
+    var startWithSystem: Bool = false
+    var silentStart: Bool = false
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Hide dock icon
@@ -29,6 +34,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             UserDefaults.standard.set(false, forKey: useDefaultKey)
             UserDefaults.standard.set(false, forKey: silentStartKey)
             UserDefaults.standard.set(false, forKey: startAtLoginKey)
+            UserDefaults.standard.set(false, forKey: debugModeKey)
         }
         
         // Initialize the window
@@ -47,7 +53,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.isReleasedWhenClosed = false
         
         // Hide window if silent start
-        let silentStart = UserDefaults.standard.bool(forKey: silentStartKey)
+        silentStart = UserDefaults.standard.bool(forKey: silentStartKey)
         if silentStart {
             print("Starting silently")
             window.orderOut(nil)
@@ -66,17 +72,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             statusBarItem.button?.action = #selector(showWindow)
             
             // Check if the user wants the app to start with the system
-            let startWithSystem = UserDefaults.standard.bool(forKey: startAtLoginKey)
+            startWithSystem = UserDefaults.standard.bool(forKey: startAtLoginKey)
             registerStartAtLogin(startWithSystem: startWithSystem)
             // Add "Start with System" checkbox to the menu
-            let startWithSystemItem = NSMenuItem(title: "Start at login", action: #selector(toggleStartWithSystem), keyEquivalent: "")
+            let startWithSystemItem = NSMenuItem(title: "Start at login", action: #selector(toggleStartWithSystem), keyEquivalent: "a")
             startWithSystemItem.state = startWithSystem ? .on : .off
             menu.addItem(startWithSystemItem)
             
             // Add "Silent start" checkbox to the menu
-            let silentStartItem = NSMenuItem(title: "Silent start", action: #selector(toggleSilentStart), keyEquivalent: "")
+            // silentStart have been set by previous code
+            let silentStartItem = NSMenuItem(title: "Silent start", action: #selector(toggleSilentStart), keyEquivalent: "s")
             silentStartItem.state = silentStart ? .on : .off
             menu.addItem(silentStartItem)
+            
+            // Add "Debug mode" checkbox to the menu
+            debugMode = UserDefaults.standard.bool(forKey: debugModeKey)
+            let debugModeItem = NSMenuItem(title: "Debug mode", action: #selector(toggleDebugMode), keyEquivalent: "d")
+            debugModeItem.state = debugMode ? .on : .off
+            menu.addItem(debugModeItem)
             
             // Add "Quit" option to the menu
             let quitItem = NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q")
@@ -122,6 +135,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let window = window {
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+    
+    @objc func toggleDebugMode() {
+        let debugMode = !UserDefaults.standard.bool(forKey: debugModeKey)
+        UserDefaults.standard.set(debugMode, forKey: debugModeKey)
+        
+        // Update the menu item state
+        if let item = self.statusBarItem?.menu?.item(withTitle: "Debug mode") {
+            item.state = debugMode ? .on : .off
         }
     }
     
