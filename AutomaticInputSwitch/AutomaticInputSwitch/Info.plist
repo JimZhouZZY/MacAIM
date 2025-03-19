@@ -10,7 +10,7 @@
 	<key>CFBundleIdentifier</key>
 	<string>cn.jimzhou.automatic-input-switch</string>
 	<key>CFBundleVersion</key>
-	<string>1.0.0-stable</string>
+	<string>1.0.0-stable-debug</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleDisplayName</key>
