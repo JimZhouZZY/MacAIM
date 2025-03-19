@@ -184,7 +184,7 @@ struct ContentView: View {
     func getRecognizedInputSources() {
         recognizedInputSources.removeAll() // Avoid repeatedly adding
         for inputSource in inputSources {
-            if inputMethodNames[getInputMethodName(inputSource)] != nil {
+            if true { // DEBUG
                 recognizedInputSources.append(inputSource)
             }
         }
