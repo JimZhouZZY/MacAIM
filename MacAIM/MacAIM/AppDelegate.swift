@@ -33,6 +33,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
         
         // Default settings
+        // This line prevents debug mode to be set
+        // Debug mode should always be set manually
+        UserDefaults.standard.set(false, forKey: debugModeKey)
         if UserDefaults.standard.object(forKey: useDefaultKey) == nil {
             print("Using default settings")
             UserDefaults.standard.set(false, forKey: useDefaultKey)
