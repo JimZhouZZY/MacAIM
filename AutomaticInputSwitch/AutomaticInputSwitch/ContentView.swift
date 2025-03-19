@@ -7,13 +7,24 @@ import Cocoa
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @State private var inputSources = TISCreateInputSourceList(nil, false).takeRetainedValue() as! [TISInputSource]
-    @State private var appNameToInputSource: [String: TISInputSource?] = [:]
-    @State private var currentAppName: String? = nil
     @State private var apps: [String] = []
-    @State private var searchText: String = ""  // Search text for filtering
+    @State private var currentAppName: String? = nil
     @State private var selectedApp: String?  // Store the selected app
-    
+    @State private var searchText: String = ""  // Search text for filtering
+    @State private var appNameToInputSource: [String: TISInputSource?] = [:]
+    @State private var inputSources = TISCreateInputSourceList(nil, false).takeRetainedValue() as! [TISInputSource]
+    @State private var recognizedInputSources = TISCreateInputSourceList(nil, false)
+                                                    .takeRetainedValue() as! [TISInputSource]
+    @State private var sortOption: SortOption = .name
+    @State private var appAddedDates: [String: Date] = [:]
+    @State private var isReversed: Bool = false // Added state variable for reverse sorting
+
+    enum SortOption: String, CaseIterable {
+        case name = "Name"
+        case dateAdded = "Date Added"
+        case inputMethod = "Input Method"
+    }
+
     // Define a dictionary to map system input source IDs to user-friendly names
     let inputMethodNames: [String: String] = [
         "com.apple.keylayout.ABC": "English",
@@ -27,19 +38,69 @@ struct ContentView: View {
     
     // Filter the apps based on the search text
     var filteredApps: [String] {
+        let sortedApps: [String]
+        
+        switch sortOption {
+        case .name:
+            sortedApps = apps.sorted()
+        case .dateAdded:
+            sortedApps = apps.sorted { (app1, app2) in
+                let date1 = appAddedDates[app1] ?? Date.distantPast
+                let date2 = appAddedDates[app2] ?? Date.distantPast
+                return date1 > date2
+            }
+        case .inputMethod:
+            sortedApps = apps.sorted { (app1, app2) in
+                let input1 = appNameToInputSource[app1].flatMap { inputMethodNames[getInputMethodName($0!)] } ?? ""
+                let input2 = appNameToInputSource[app2].flatMap { inputMethodNames[getInputMethodName($0!)]  } ?? ""
+                return input1 > input2
+            }
+        }
+        let finalSortedApps = isReversed ? sortedApps.reversed() : sortedApps
+
         if searchText.isEmpty {
-            return apps
+            return Array(finalSortedApps)
         } else {
-            return apps.filter { $0.localizedCaseInsensitiveContains(searchText) }
+            return Array(finalSortedApps.filter { $0.localizedCaseInsensitiveContains(searchText) })
         }
     }
 
     var body: some View {
         VStack {
             // Search Bar
-            TextField("Search for an app", text: $searchText)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color(NSColor.controlBackgroundColor))
+                    .shadow(radius: searchText.isEmpty ? 3 : 6) // 增强输入时的阴影效果
+                    .animation(.easeInOut(duration: 0.3), value: searchText) // 添加动画
+
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
+                        .padding(.leading, 8)
+
+                    TextField("Search for an app", text: $searchText)
+                        .textFieldStyle(PlainTextFieldStyle())
+                        .padding(8)
+                }
+            }
+            .frame(height: 36)
+            .padding(.horizontal)
+
+            HStack {
+                Picker("Sort by: ", selection: $sortOption) {
+                    ForEach(SortOption.allCases, id: \.self) { option in
+                        Text(option.rawValue).tag(option)
+                    }
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .animation(.easeInOut(duration: 0.3), value: sortOption)
+
+                Toggle("Reversed", isOn: $isReversed)
+                    .transition(.opacity.combined(with: .move(edge: .trailing))) // 平滑切换
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 8)
 
             // List of apps with keyboard navigation
             List(filteredApps, id: \.self, selection: $selectedApp) { appName in
@@ -62,7 +123,7 @@ struct ContentView: View {
                         }
                     )) {
                         // TODO: sort it
-                        ForEach(inputSources, id: \.self) { inputSource in
+                        ForEach(recognizedInputSources, id: \.self) { inputSource in
                             Text(inputMethodNames[getInputMethodName(inputSource)] ??
                                  ("Unrecognized: " + getInputMethodName(inputSource)))
                             .tag(inputSource)
@@ -71,11 +132,20 @@ struct ContentView: View {
                     .pickerStyle(MenuPickerStyle()) // Dropdown menu
                     .frame(width: 200)
                 }
-                .padding()
+                .listRowBackground(
+                    LinearGradient(
+                        gradient: Gradient(colors: selectedApp == appName ? [Color.blue.opacity(0.3), Color.blue.opacity(0.1)] : [Color.clear, Color.clear]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .animation(.spring(response: 0.4, dampingFraction: 0.7, blendDuration: 0.3), value: filteredApps)
+                .padding(.vertical, 8)
             }
             .onAppear {
                 loadApplications()
                 loadInputMethods()
+                getRecognizedInputSources()
                 mainLoop()
             }
         }
@@ -105,8 +175,17 @@ struct ContentView: View {
                 } else {
                     print("Unable to get the current app name")
                 }
-                // sleeps for 10 ms
-                usleep(10000)
+                // sleeps for 50 ms
+                usleep(50000)
+            }
+        }
+    }
+    
+    func getRecognizedInputSources() {
+        recognizedInputSources.removeAll() // Avoid repeatedly adding
+        for inputSource in inputSources {
+            if inputMethodNames[getInputMethodName(inputSource)] != nil {
+                recognizedInputSources.append(inputSource)
             }
         }
     }
@@ -165,6 +244,12 @@ struct ContentView: View {
         
         do {
             let appURLs = try fileManager.contentsOfDirectory(at: applicationsURL, includingPropertiesForKeys: nil)
+            for appURL in appURLs {
+                let attributes = try? fileManager.attributesOfItem(atPath: appURL.path)
+                if let creationDate = attributes?[.creationDate] as? Date {
+                    appAddedDates[appURL.lastPathComponent] = creationDate
+                }
+            }
             apps = appURLs
                 .filter { $0.pathExtension == "app" }
                 .compactMap { url -> String? in

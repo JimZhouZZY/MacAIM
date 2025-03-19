@@ -14,127 +14,90 @@ import ServiceManagement
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusBarItem: NSStatusItem?
     var window: NSWindow!
-    var winclosed = false
-    let startupKey = "startAtLogin"
+
+    let useDefaultKey = "useDefault"
+    let startAtLoginKey = "startAtLogin"
     let silentStartKey = "silentStart"
-    var silentStart = false
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Hide dock icon
         NSApp.setActivationPolicy(.accessory)
         
-        // Set up the status bar item
+        // Default settings
+        if UserDefaults.standard.object(forKey: useDefaultKey) == nil {
+            print("Using default settings")
+            UserDefaults.standard.set(false, forKey: useDefaultKey)
+            UserDefaults.standard.set(false, forKey: silentStartKey)
+            UserDefaults.standard.set(false, forKey: startAtLoginKey)
+        }
+        
+        // Initialize the window
+        let contentView = ContentView()
+        window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 550, height: 600),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.center()
+        window.contentView = NSHostingView(rootView: contentView)
+        // Why dont this title work?
+        window.title = "Automatic Input Switch"
+        window.makeKeyAndOrderFront(nil)
+        window.isReleasedWhenClosed = false
+        
+        // Hide window if silent start
+        let silentStart = UserDefaults.standard.bool(forKey: silentStartKey)
+        if silentStart {
+            print("Starting silently")
+            window.orderOut(nil)
+        }
+
+        // Set up the status bar
         statusBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let statusBarItem = statusBarItem {
             statusBarItem.button?.title = "🖥"
             let menu = NSMenu()
             
-            // Add "Quit" option to the menu
-            let quitItem = NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q")
-            menu.addItem(quitItem)
-            
-            // Add "Show Window" option to the menu
+            // Add "Dashboard" option to the menu
             let showWindowItem = NSMenuItem(title: "Dashboard", action: #selector(showWindow), keyEquivalent: "w")
             menu.addItem(showWindowItem)
+            // Set action for the status bar button to show dashboard
+            statusBarItem.button?.action = #selector(showWindow)
             
             // Check if the user wants the app to start with the system
-            let startWithSystem = UserDefaults.standard.bool(forKey: startupKey)
-            if startWithSystem {
-                // Register the app to start at login
-                do {
-                    try SMAppService.mainApp.register()
-                } catch {
-                    print("An Error occurred: \(error)")
-                }
-            }
-            
+            let startWithSystem = UserDefaults.standard.bool(forKey: startAtLoginKey)
+            registerStartAtLogin(startWithSystem: startWithSystem)
             // Add "Start with System" checkbox to the menu
             let startWithSystemItem = NSMenuItem(title: "Start at login", action: #selector(toggleStartWithSystem), keyEquivalent: "")
             startWithSystemItem.state = startWithSystem ? .on : .off
             menu.addItem(startWithSystemItem)
             
             // Add "Silent start" checkbox to the menu
-            silentStart = UserDefaults.standard.bool(forKey: silentStartKey)
             let silentStartItem = NSMenuItem(title: "Silent start", action: #selector(toggleSilentStart), keyEquivalent: "")
             silentStartItem.state = silentStart ? .on : .off
             menu.addItem(silentStartItem)
             
-            statusBarItem.menu = menu
+            // Add "Quit" option to the menu
+            let quitItem = NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q")
+            menu.addItem(quitItem)
             
-            // Set action for the status bar button to show window
-            statusBarItem.button?.action = #selector(showWindow)
-        }
-        
-        // Initialize the window
-        let contentView = ContentView()
-        //window = NSWindow(
-        //    contentRect: NSRect(x: 0, y: 0, width: 600, height: 600),
-        //    styleMask: [.titled, .closable, .miniaturizable, .resizable],
-        //    backing: .buffered,
-        //    defer: false
-        //)
-        window = NSApp.windows[0]
-        if String(describing: type(of: window)) != "SwiftUI.AppKitWindow" {
-            NSApp.windows[1]
-        }
-        window.center()
-        window.contentView = NSHostingView(rootView: contentView)
-        // Why dont this title work?
-        window.title = "Automatic Input Switch"
-        window.makeKeyAndOrderFront(nil)
-        window.isReleasedWhenClosed = false // Keep the window in memory
-
-        if silentStart {
-            if window != nil {
-                print("Starting silently")
-                window.orderOut(nil)
-                var elapsed = 0.0
-                let interval = 0.1 // 100ms
-                let duration = 1.0 // 5 seconds
-
-                Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
-                    elapsed += interval
-                    print(NSApplication.shared.windows.first)
-                    NSApplication.shared.windows.first?.performClose(nil)
-                    print(self.winclosed)
-                    if elapsed >= duration {
-                        timer.invalidate()
-                    }
-                }
-            }
+            // Finally
+            statusBarItem.menu = menu
         }
     }
     
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         // Hide the window instead of quitting the app
         sender.orderOut(nil)
-        winclosed = true
         return false
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return false
     }
-
-    @objc func quitApp() {
-        NSApplication.shared.terminate(nil)
-    }
     
-    @objc func showWindow() {
-        if let window = window {
-            if true { //winclosed
-                //print(NSApp.windows)
-                window.makeKeyAndOrderFront(nil)
-                //window.orderOut(nil)
-            }
-        }
-    }
-    
-    @objc func toggleStartWithSystem() {
-        let startWithSystem = !UserDefaults.standard.bool(forKey: startupKey)
-        UserDefaults.standard.set(startWithSystem, forKey: startupKey)
-        
-        
+    func registerStartAtLogin(startWithSystem: Bool) {
         // Use SMAppService instead of SMLoginItemSetEnabled
         if startWithSystem {
             do {
@@ -149,9 +112,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 print("An Error occurred: \(error)")
             }
         }
+    }
+
+    @objc func quitApp() {
+        NSApplication.shared.terminate(nil)
+    }
+    
+    @objc func showWindow() {
+        if let window = window {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+    
+    @objc func toggleStartWithSystem() {
+        let startWithSystem = !UserDefaults.standard.bool(forKey: startAtLoginKey)
+        UserDefaults.standard.set(startWithSystem, forKey: startAtLoginKey)
+        
+        registerStartAtLogin(startWithSystem: startWithSystem)
         
         // Update the menu item state
-        if let item = statusBarItem?.menu?.item(withTitle: "Start with System") {
+        if let item = self.statusBarItem?.menu?.item(withTitle: "Start at login") {
             item.state = startWithSystem ? .on : .off
         }
     }

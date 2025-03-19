@@ -4,6 +4,7 @@ import AppKit
 
 @main
 struct AutomaticInputSwitchApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     init() {
         // Prevent multiple instances
@@ -15,10 +16,8 @@ struct AutomaticInputSwitchApp: App {
     }
     
     var body: some Scene {
-        Window("Automatic Input Switch", id: "MainWindow") {
-            ContentView()
+        Settings {
         }
         .defaultSize(width: 600, height: 600)
     }
-    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 }
