@@ -10,10 +10,18 @@ import SwiftData
 import AppKit
 import Cocoa
 import ServiceManagement
+import Foundation
+import Carbon
+
+class AppNameToInputSourceModel: ObservableObject {
+    @Published var appNameToInputSource: [String: TISInputSource] = [:]
+    @Published var inputSources: [TISInputSource] = []
+}
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusBarItem: NSStatusItem?
     var window: NSWindow!
+    @ObservedObject var appNameToInputSourceModel = AppNameToInputSourceModel()
 
     let useDefaultKey = "useDefault"
     let startAtLoginKey = "startAtLogin"
@@ -38,7 +46,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         // Initialize the window
-        let contentView = ContentView()
+        let contentView = ContentView(appNameToInputSourceModel: appNameToInputSourceModel)
         window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 550, height: 600),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
@@ -98,6 +106,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Finally
             statusBarItem.menu = menu
         }
+        
+        // Start main loop!
+        mainLoop()
     }
     
     func windowShouldClose(_ sender: NSWindow) -> Bool {
@@ -169,4 +180,61 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             item.state = silentStart ? .on : .off
         }
     }
+    
+    func mainLoop() {
+        var itr = 0
+        // Run the loop in a background thread
+        DispatchQueue.global(qos: .background).async {
+            while true {
+                itr += 1
+                // DO NOT read this property too frequently because it takes disk io
+                if itr % 10 == 0 {
+                    if let _showDashboard = UserDefaults.standard.object(forKey: "_showDashboard") {
+                        if _showDashboard as! Bool {
+                            DispatchQueue.main.async {
+                                self.showWindow()
+                                UserDefaults.standard.set(false, forKey: "_showDashboard")
+                            }
+                        }
+                    }
+                }
+                let retval: (String?, String?) = getCurrentAppName()
+                let appName = retval.0 ?? ""
+                if appName != "" {
+                    let lastAppName = retval.1 ?? ""
+                    // Only trigger when the app name changes
+                    if !(appName == lastAppName) {
+                        print("User is now using: \(appName)")
+                        if let inputSource = self.appNameToInputSourceModel.appNameToInputSource[appName] ?? self.appNameToInputSourceModel.inputSources.first {
+                            // Ensure switchInputMethod is called on the main thread
+                            DispatchQueue.main.async {
+                                self.switchInputSource(to: inputSource)
+                            }
+                        } else {
+                            print("No input method found for \(appName)")
+                        }
+                    }
+                } else {
+                    print("Unable to get the current app name")
+                }
+                // sleeps for 50 ms
+                usleep(50000)
+            }
+        }
+    }
+    
+    func switchInputSource(to inputSource: TISInputSource) {
+        TISSelectInputSource(inputSource)
+        return
+    }
+}
+
+var lastAppName = ""
+func getCurrentAppName() -> (String, String) {
+    let lastlastAppName = lastAppName
+    if let frontApp = NSWorkspace.shared.frontmostApplication {
+        lastAppName = frontApp.localizedName ?? ""
+        return (lastAppName, lastlastAppName)
+    }
+    return ("", lastlastAppName)
 }

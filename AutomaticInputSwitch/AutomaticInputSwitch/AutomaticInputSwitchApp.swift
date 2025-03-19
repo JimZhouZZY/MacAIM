@@ -12,9 +12,7 @@ struct AutomaticInputSwitchApp: App {
         if runningApps.count > 1 {
             // These lines doesn't work, for now
             // If another instance is running, bring its window to the front
-            if let delegate = NSApplication.shared.delegate as? AppDelegate {
-                delegate.showWindow()
-            }
+            UserDefaults.standard.set(true, forKey: "_showDashboard")
             
             // If there is already an instance running, exit the new one
             NSApplication.shared.terminate(nil)

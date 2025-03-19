@@ -6,7 +6,7 @@ import AppKit
 import Cocoa
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
+    @ObservedObject var appNameToInputSourceModel: AppNameToInputSourceModel
     
     @AppStorage("debugMode") var debugMode: Bool = false
     
@@ -157,39 +157,9 @@ struct ContentView: View {
                 loadApplications()
                 loadInputMethods()
                 getRecognizedInputSources()
-                mainLoop()
             }
         }
         .padding()
-    }
-    
-    func mainLoop() {
-        // Run the loop in a background thread
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                let retval: (String?, String?) = getCurrentAppName()
-                let appName = retval.0 ?? ""
-                if appName != "" {
-                    let lastAppName = retval.1 ?? ""
-                    // Only trigger when the app name changes
-                    if !(appName == lastAppName) {
-                        print("User is now using: \(appName)")
-                        if let inputSource = appNameToInputSource[appName] ?? inputSources.first {
-                            // Ensure switchInputMethod is called on the main thread
-                            DispatchQueue.main.async {
-                                switchInputSource(to: inputSource)
-                            }
-                        } else {
-                            print("No input method found for \(appName)")
-                        }
-                    }
-                } else {
-                    print("Unable to get the current app name")
-                }
-                // sleeps for 50 ms
-                usleep(50000)
-            }
-        }
     }
     
     func getRecognizedInputSources() {
@@ -277,19 +247,4 @@ struct ContentView: View {
             print("Error loading applications: \(error)")
         }
     }
-    
-    func switchInputSource(to inputSource: TISInputSource) {
-        TISSelectInputSource(inputSource)
-        return
-    }
-}
-
-var lastAppName = ""
-func getCurrentAppName() -> (String, String) {
-    let lastlastAppName = lastAppName
-    if let frontApp = NSWorkspace.shared.frontmostApplication {
-        lastAppName = frontApp.localizedName ?? ""
-        return (lastAppName, lastlastAppName)
-    }
-    return ("", lastlastAppName)
 }
