@@ -47,8 +47,8 @@ struct ContentView: View {
                     if let appIcon = getAppIcon(for: appName) {
                         Image(nsImage: appIcon)
                             .resizable()
-                            .frame(width: 32, height: 32) // Adjust icon size
-                            .clipShape(RoundedRectangle(cornerRadius: 5)) // Optional: Rounded corners
+                            .frame(width: 48, height: 48) // Adjust icon size
+                            .clipShape(RoundedRectangle(cornerRadius: 6)) // Optional: Rounded corners
                     }
                     Text(appName)
                     Spacer()
