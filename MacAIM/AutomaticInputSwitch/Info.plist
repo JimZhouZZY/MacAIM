@@ -6,17 +6,19 @@
 &lt;string&gt;public.app-category.utilities&lt;/string&gt;</key>
 	<string>public.app-category.utilities</string>
 	<key>CFBundleName</key>
-	<string>AutoInputSwitch</string>
+	<string>MacAIM</string>
 	<key>CFBundleIdentifier</key>
-	<string>cn.jimzhou.automatic-input-switch</string>
+	<string>cn.jimzhou.macaim</string>
 	<key>CFBundleVersion</key>
 	<string>1.0.2-stable</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleDisplayName</key>
-	<string>Automatic Input Switch</string>
+	<string>MacAIM</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon.icns</string>
+	<key>LSMultipleInstancesProhibited</key>
+	<false/>
 	<key>LSUIElement</key>
 	<true/>
 </dict>

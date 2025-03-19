@@ -101,6 +101,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             statusBarItem.menu = menu
         }
         
+        // Set up the menu bar
+        //
+        // **************** Not finished yet **************** //
+        let mainMenu = NSMenu()
+        let appMenu = NSMenu(title: "MacAIM")
+        let appMenuItem = NSMenuItem()
+        appMenuItem.submenu = appMenu
+        mainMenu.addItem(appMenuItem)
+        NSApp.mainMenu = mainMenu
+        // **************** Not finished yet **************** //
+        
         DispatchQueue.global(qos: .background).async {
             self.mainLoop()
         }
@@ -177,21 +188,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func mainLoop() {
-        var itr = 0
         while true {
-            itr += 1
-            // DO NOT read this property too frequently because it takes disk io
-            if itr % 10 == 0 {
-                if let _showDashboard = UserDefaults.standard.object(forKey: "_showDashboard") {
-                    if _showDashboard as! Bool {
-                        DispatchQueue.main.async {
-                            self.showWindow()
-                            UserDefaults.standard.set(false, forKey: "_showDashboard")
-                        }
+            if let _showDashboard = UserDefaults.standard.object(forKey: "_showDashboard") {
+                if _showDashboard as! Bool {
+                    print("AHA")
+                    DispatchQueue.main.async {
+                        self.showWindow()
+                        UserDefaults.standard.set(false, forKey: "_showDashboard")
                     }
                 }
             }
+            // sleeps for 100 ms
+            usleep(100000)
         }
+    }
+    
+    func applicationDidBecomeActive(_ notification: Notification) {
+        print("App gained focus")
+        showWindow()
+    }
+    
+    func applicationDidResignActive(_ notification: Notification) {
+        print("App lost focus")
     }
 }
 
