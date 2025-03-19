@@ -35,6 +35,7 @@ struct ContentView: View {
         "com.apple.inputmethod.Kotoeri": "Japanese - Kotoeri",
         "com.apple.inputmethod.SimplifiedChinese": "Simplified Chinese",
         "com.apple.inputmethod.TCIM.Pinyin": "Pinyin - Traditional",
+        "com.tencent.inputmethod.wetype.pinyin": "Pinyin - WeType"
         // TODO: more mappings
     ]
     
