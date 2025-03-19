@@ -36,7 +36,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // This line prevents debug mode to be set
         // Debug mode should always be set manually
         UserDefaults.standard.set(false, forKey: debugModeKey)
-        if UserDefaults.standard.object(forKey: useDefaultKey) == nil {
+        // **DO THESE CHECKS** or there might be unexpected crash
+        if (UserDefaults.standard.object(forKey: useDefaultKey) == nil ||
+            UserDefaults.standard.object(forKey: silentStartKey) == nil ||
+            UserDefaults.standard.object(forKey: startAtLoginKey) == nil ||
+            UserDefaults.standard.object(forKey: debugModeKey) == nil ||
+            UserDefaults.standard.object(forKey: showStatusBarIconKey) == nil ||
+            UserDefaults.standard.object(forKey: "_showDashboard") == nil ||
+            UserDefaults.standard.object(forKey: "_showStatusBarIcon") == nil ||
+            UserDefaults.standard.object(forKey: "_hideStatusBarIcon") == nil)
+        {
             print("Using default settings")
             UserDefaults.standard.set(false, forKey: useDefaultKey)
             UserDefaults.standard.set(false, forKey: silentStartKey)
