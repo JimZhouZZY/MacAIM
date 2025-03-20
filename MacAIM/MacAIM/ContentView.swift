@@ -6,6 +6,7 @@ import AppKit
 import Cocoa
 
 struct ContentView: View {
+    var settingsWindowController: NSWindowController?
     
     @AppStorage("debugMode") var debugMode: Bool = false
     
@@ -311,7 +312,39 @@ struct ContentView: View {
         return
     }
     
+    @State private var settingsWindow: NSWindow?
+
     func openSettingsWindow() {
+        if let window = settingsWindow, window.isVisible {
+            window.makeKeyAndOrderFront(nil)
+            return
+        }
+
+        let settingsView = SettingsView()
+
+        let newWindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 350, height: 250),
+            styleMask: [.titled, .closable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        
+        newWindow.center()
+        newWindow.title = "Settings"
+        newWindow.contentView = NSHostingView(rootView: settingsView)
+        newWindow.isReleasedWhenClosed = false
+        newWindow.makeKeyAndOrderFront(nil)
+
+        settingsWindow = newWindow
+
+        // Handle window closing
+        NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: newWindow, queue: nil) { _ in
+            self.settingsWindow = nil
+            UserDefaults.standard.set(true, forKey: "_updateMenuState")
+        }
+    }
+    
+    func toggleStatusBarIcon() {
         let show = UserDefaults.standard.object(forKey: "showStatusBarIcon") as! Bool
         UserDefaults.standard.set(!show, forKey: "showStatusBarIcon")
         if show {

@@ -23,10 +23,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let debugModeKey = "debugMode"
     let showStatusBarIconKey = "showStatusBarIcon"
     
-    var debugMode: Bool = false
-    var startWithSystem: Bool = false
-    var silentStart: Bool = false
-    var showStatusBarIcon: Bool = false
+    private var startAtLogin = false
+    private var silentStart = false
+    private var debugMode = false
+    private var showStatusBarIcon = true
+    
+    var initing: Bool = true
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Hide dock icon
@@ -44,7 +46,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             UserDefaults.standard.object(forKey: showStatusBarIconKey) == nil ||
             UserDefaults.standard.object(forKey: "_showDashboard") == nil ||
             UserDefaults.standard.object(forKey: "_showStatusBarIcon") == nil ||
-            UserDefaults.standard.object(forKey: "_hideStatusBarIcon") == nil)
+            UserDefaults.standard.object(forKey: "_hideStatusBarIcon") == nil ||
+            UserDefaults.standard.object(forKey: "_updateMenuState") == nil)
         {
             print("Using default settings")
             UserDefaults.standard.set(false, forKey: useDefaultKey)
@@ -55,6 +58,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             UserDefaults.standard.set(false, forKey: "_showDashboard")
             UserDefaults.standard.set(false, forKey: "_showStatusBarIcon")
             UserDefaults.standard.set(false, forKey: "_hideStatusBarIcon")
+            UserDefaults.standard.set(false, forKey: "_updateMenuState")
         }
         
         // Initialize the window
@@ -95,6 +99,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // mainMenu.addItem(appMenuItem)
         // NSApp.mainMenu = mainMenu
         // **************** Not finished yet **************** //
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            self.initing = false
+        }
         
         DispatchQueue.global(qos: .background).async {
             self.mainLoop()
@@ -149,6 +157,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
+    @objc func toggleShowStatusBarIcon() {
+        let showStatusBarIcon = !UserDefaults.standard.bool(forKey: showStatusBarIconKey)
+        UserDefaults.standard.set(showStatusBarIcon, forKey: showStatusBarIconKey)
+        
+        // Update the menu item state
+        if let item = self.statusBarItem?.menu?.item(withTitle: "Status icon") {
+            item.state = showStatusBarIcon ? .on : .off
+            if showStatusBarIcon {
+                UserDefaults.standard.set(true, forKey: "_showStatusBarIcon")
+            } else {
+                UserDefaults.standard.set(true, forKey: "_hideStatusBarIcon")
+            }
+        }
+    }
+    
     @objc func toggleStartWithSystem() {
         let startWithSystem = !UserDefaults.standard.bool(forKey: startAtLoginKey)
         UserDefaults.standard.set(startWithSystem, forKey: startAtLoginKey)
@@ -200,14 +223,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                 }
             }
+            if let _updateMenuState = UserDefaults.standard.object(forKey: "_updateMenuState") {
+                if _updateMenuState as! Bool {
+                    print("_updateMenuState")
+                    DispatchQueue.main.async {
+                        self.loadConfig()
+                        self.updateMenuState()
+                        UserDefaults.standard.set(false, forKey: "_updateMenuState")
+                    }
+                }
+            }
             // sleeps for 100 ms
             usleep(100000)
         }
     }
     
     func applicationDidBecomeActive(_ notification: Notification) {
-        print("App gained focus")
-        showWindow()
+        if !initing {
+            print("App gained focus")
+            showWindow()
+        }
     }
     
     func applicationDidResignActive(_ notification: Notification) {
@@ -240,12 +275,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Set action for the status bar button to show dashboard
             statusBarItem.button?.action = #selector(showWindow)
             
+            menu.addItem(.separator())
+            
             // Check if the user wants the app to start with the system
-            startWithSystem = UserDefaults.standard.bool(forKey: startAtLoginKey)
-            registerStartAtLogin(startWithSystem: startWithSystem)
+            startAtLogin = UserDefaults.standard.bool(forKey: startAtLoginKey)
+            registerStartAtLogin(startWithSystem: startAtLogin)
             // Add "Start with System" checkbox to the menu
             let startWithSystemItem = NSMenuItem(title: "Start at login", action: #selector(toggleStartWithSystem), keyEquivalent: "a")
-            startWithSystemItem.state = startWithSystem ? .on : .off
+            startWithSystemItem.state = startAtLogin ? .on : .off
             menu.addItem(startWithSystemItem)
             
             // Add "Silent start" checkbox to the menu
@@ -254,11 +291,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             silentStartItem.state = silentStart ? .on : .off
             menu.addItem(silentStartItem)
             
+            // Add "Status icon" checkbox to the menu
+            showStatusBarIcon = UserDefaults.standard.bool(forKey: showStatusBarIconKey)
+            let showStatusBarIconItem = NSMenuItem(title: "Status icon", action: #selector(toggleShowStatusBarIcon), keyEquivalent: "i")
+            showStatusBarIconItem.state = showStatusBarIcon ? .on : .off
+            menu.addItem(showStatusBarIconItem)
+            
             // Add "Debug mode" checkbox to the menu
             debugMode = UserDefaults.standard.bool(forKey: debugModeKey)
             let debugModeItem = NSMenuItem(title: "Debug mode", action: #selector(toggleDebugMode), keyEquivalent: "")
             debugModeItem.state = debugMode ? .on : .off
             menu.addItem(debugModeItem)
+            
+            menu.addItem(.separator())
             
             // Add "Quit" option to the menu
             let quitItem = NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q")
@@ -268,6 +313,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             statusBarItem.menu = menu
         }
     }
+    
+    func loadConfig() {
+        silentStart = UserDefaults.standard.bool(forKey: silentStartKey)
+        startAtLogin = UserDefaults.standard.bool(forKey: startAtLoginKey)
+        showStatusBarIcon = UserDefaults.standard.bool(forKey: showStatusBarIconKey)
+        debugMode = UserDefaults.standard.bool(forKey: debugModeKey)
+    }
+    
+    func updateMenuState() {
+        // Status bar may be not created
+        if showStatusBarIcon {
+            UserDefaults.standard.set(true, forKey: "_showStatusBarIcon")
+        } else {
+            UserDefaults.standard.set(true, forKey: "_hideStatusBarIcon")
+        }
+        
+        if let item = statusBarItem?.menu?.item(withTitle: "Debug mode") {
+            print(item,debugMode)
+            item.state = debugMode ? .on : .off
+        }
+        if let item = statusBarItem?.menu?.item(withTitle: "Silent start") {
+            item.state = silentStart ? .on : .off
+        }
+        if let item = statusBarItem?.menu?.item(withTitle: "Start at login") {
+            item.state = startAtLogin ? .on : .off
+        }
+        if let item = statusBarItem?.menu?.item(withTitle: "Status icon") {
+            item.state = showStatusBarIcon ? .on : .off
+        }
+    }
 }
-
-
