@@ -1,3 +1,21 @@
+/*
+    MacAIM
+    Copyright (C) 2025 Jim Zhou
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <https://www.gnu.org/licenses/>.
+*/
+
 import SwiftUI
 
 struct SettingsView: View {
@@ -38,12 +56,25 @@ struct SettingsView: View {
                     .padding(.horizontal, 20)
                 }
                 .padding(.horizontal, 10)
+
+                Section {
+                    VStack(alignment: .center) {
+                        Text("MacAIM Version \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown")")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                        Text("Jim Zhou - jimzhouzzy@gmail.com")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .padding(.top, 10)
             }
             .navigationTitle("Settings")
-            .frame(width: 320, height: 320)
+            .frame(width: 320, height: 340)
             .fixedSize()
         }
-        .frame(width: 320, height: 320)
+        .frame(width: 320, height: 340)
         .fixedSize()
     }
 }
