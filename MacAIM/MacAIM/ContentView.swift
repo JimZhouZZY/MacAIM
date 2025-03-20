@@ -250,7 +250,6 @@ struct ContentView: View {
         
         do {
             let appURLs = try fileManager.contentsOfDirectory(at: applicationsURL, includingPropertiesForKeys: nil)
-            print(appURLs)
             for appURL in appURLs {
                 let attributes = try? fileManager.attributesOfItem(atPath: appURL.path)
                 if let creationDate = attributes?[.creationDate] as? Date {

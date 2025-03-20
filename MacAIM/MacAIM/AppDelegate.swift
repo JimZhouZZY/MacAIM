@@ -88,12 +88,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Set up the menu bar
         //
         // **************** Not finished yet **************** //
-        let mainMenu = NSMenu()
-        let appMenu = NSMenu(title: "MacAIM")
-        let appMenuItem = NSMenuItem()
-        appMenuItem.submenu = appMenu
-        mainMenu.addItem(appMenuItem)
-        NSApp.mainMenu = mainMenu
+        // let mainMenu = NSMenu()
+        // let appMenu = NSMenu(title: "MacAIM")
+        // let appMenuItem = NSMenuItem()
+        // appMenuItem.submenu = appMenu
+        // mainMenu.addItem(appMenuItem)
+        // NSApp.mainMenu = mainMenu
         // **************** Not finished yet **************** //
         
         DispatchQueue.global(qos: .background).async {
@@ -224,7 +224,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func createStatusBarItem() {
         statusBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let statusBarItem = statusBarItem {
-            statusBarItem.button?.title = "🖥"
+            if let button = statusBarItem.button {
+                let title = NSMutableAttributedString(string: "AiM", attributes: [
+                    .font: NSFont.boldSystemFont(ofSize: NSFont.systemFontSize),
+                    .strokeWidth: -2.0
+                ])
+                button.attributedTitle = title
+            }
+
             let menu = NSMenu()
             
             // Add "Dashboard" option to the menu
