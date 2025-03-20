@@ -22,6 +22,5 @@ struct AutomaticInputSwitchApp: App {
     var body: some Scene {
         Settings {
         }
-        .defaultSize(width: 600, height: 600)
     }
 }

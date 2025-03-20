@@ -68,7 +68,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.center()
         window.contentView = NSHostingView(rootView: contentView)
         // Why dont this title work?
-        window.title = "Automatic Input Switch"
+        window.title = "MacAIM - Automatic Input Switch"
         window.makeKeyAndOrderFront(nil)
         window.isReleasedWhenClosed = false
         
