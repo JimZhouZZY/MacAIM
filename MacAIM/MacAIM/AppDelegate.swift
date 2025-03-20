@@ -143,6 +143,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func showWindow() {
         if let window = window {
             window.makeKeyAndOrderFront(nil)
+            
+            // Ensure the app remains in accessory mode
+            // This is neccessary
+            NSApp.setActivationPolicy(.accessory)
+            
             NSApp.activate(ignoringOtherApps: true)
         }
     }

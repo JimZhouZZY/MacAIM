@@ -15,7 +15,7 @@ struct SettingsView: View {
                     Toggle("Debug mode", isOn: $debugMode)
                     Toggle("Status icon", isOn: $showStatusBarIcon)
                 }
-                .padding(.horizontal, 10) // 调整左右间距
+                .padding(.horizontal, 10)
                 
                 //Section {
                 //    Button("Close") {
