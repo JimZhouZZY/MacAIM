@@ -131,7 +131,14 @@ struct ContentView: View {
                             .frame(width: 48, height: 48) // Adjust icon size
                             .clipShape(RoundedRectangle(cornerRadius: 6)) // Optional: Rounded corners
                     }
+                VStack(alignment: .leading) {
                     Text(appName)
+                    if debugMode, let bundleIdentifier = appNameToBundleIdentifier[appName] {
+                        Text(bundleIdentifier)
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                }
                     Spacer()
                     Picker("Input Method", selection: Binding(
                         get: {
@@ -243,6 +250,7 @@ struct ContentView: View {
         
         do {
             let appURLs = try fileManager.contentsOfDirectory(at: applicationsURL, includingPropertiesForKeys: nil)
+            print(appURLs)
             for appURL in appURLs {
                 let attributes = try? fileManager.attributesOfItem(atPath: appURL.path)
                 if let creationDate = attributes?[.creationDate] as? Date {
@@ -251,10 +259,7 @@ struct ContentView: View {
             }
             apps = appURLs
                 .filter { $0.pathExtension == "app" }
-                .compactMap { url -> String? in
-                    let values = try? url.resourceValues(forKeys: [.localizedNameKey])
-                    return values?.localizedName
-                }
+                .map { $0.deletingPathExtension().lastPathComponent }
             
             for appName in apps {
                 if appNameToInputSource[appName] == nil {
