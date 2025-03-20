@@ -20,6 +20,8 @@ struct ContentView: View {
     @State private var inputSources = TISCreateInputSourceList(nil, false).takeRetainedValue() as! [TISInputSource]
     @State private var recognizedInputSources = TISCreateInputSourceList(nil, false)
                                                     .takeRetainedValue() as! [TISInputSource]
+    @State private var appNameToBundleIdentifier: [String: String] = [:]
+    @State private var bundleIdentifierToAppName: [String: String] = [:]
 
     enum SortOption: String, CaseIterable {
         case name = "Name"
@@ -258,6 +260,12 @@ struct ContentView: View {
                 if appNameToInputSource[appName] == nil {
                     appNameToInputSource[appName] = inputSources.first
                 }
+
+                let appPath = "/Applications/\(appName).app"
+                if let bundle = Bundle(url: URL(fileURLWithPath: appPath)), let bundleIdentifier = bundle.bundleIdentifier {
+                    appNameToBundleIdentifier[appName] = bundleIdentifier
+                    bundleIdentifierToAppName[bundleIdentifier] = appName
+                }
             }
         } catch {
             print("Error loading applications: \(error)")
@@ -269,12 +277,13 @@ struct ContentView: View {
         DispatchQueue.global(qos: .background).async {
             while true {
                 let retval: (String?, String?) = getCurrentAppName()
-                let appName = retval.0 ?? ""
-                if appName != "" {
-                    let lastAppName = retval.1 ?? ""
+                let appBundleIdentidier = retval.0 ?? ""
+                if appBundleIdentidier != "" {
+                    let lastAppBundleIdentidier = retval.1 ?? ""
                     // Only trigger when the app name changes
-                    if !(appName == lastAppName) {
-                        print("User is now using: \(appName)")
+                    if !(appBundleIdentidier == lastAppBundleIdentidier) {
+                        let appName = bundleIdentifierToAppName[appBundleIdentidier] ?? appBundleIdentidier
+                        print("User is now using: \(appBundleIdentidier)")
                         if let inputSource = appNameToInputSource[appName] ?? inputSources.first {
                             // Ensure switchInputMethod is called on the main thread
                             DispatchQueue.main.async {
@@ -309,12 +318,12 @@ struct ContentView: View {
     }
 }
 
-var lastAppName = ""
+var lastAppBundleIdentifier = ""
 func getCurrentAppName() -> (String, String) {
-    let lastlastAppName = lastAppName
+    let lastlastAppBundleIdentifier = lastAppBundleIdentifier
     if let frontApp = NSWorkspace.shared.frontmostApplication {
-        lastAppName = frontApp.localizedName ?? ""
-        return (lastAppName, lastlastAppName)
+        lastAppBundleIdentifier = frontApp.bundleIdentifier ?? ""
+        return (lastAppBundleIdentifier, lastlastAppBundleIdentifier)
     }
-    return ("", lastlastAppName)
+    return ("", lastlastAppBundleIdentifier)
 }

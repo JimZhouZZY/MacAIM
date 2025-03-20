@@ -228,7 +228,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let menu = NSMenu()
             
             // Add "Dashboard" option to the menu
-            let showWindowItem = NSMenuItem(title: "Dashboard", action: #selector(showWindow), keyEquivalent: "w")
+            let showWindowItem = NSMenuItem(title: "Dashboard", action: #selector(showWindow), keyEquivalent: "d")
             menu.addItem(showWindowItem)
             // Set action for the status bar button to show dashboard
             statusBarItem.button?.action = #selector(showWindow)
@@ -249,7 +249,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             
             // Add "Debug mode" checkbox to the menu
             debugMode = UserDefaults.standard.bool(forKey: debugModeKey)
-            let debugModeItem = NSMenuItem(title: "Debug mode", action: #selector(toggleDebugMode), keyEquivalent: "d")
+            let debugModeItem = NSMenuItem(title: "Debug mode", action: #selector(toggleDebugMode), keyEquivalent: "")
             debugModeItem.state = debugMode ? .on : .off
             menu.addItem(debugModeItem)
             
