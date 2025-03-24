@@ -128,7 +128,7 @@ struct ContentView: View {
                 .animation(.easeInOut(duration: 0.3), value: sortOption)
 
                 Toggle("Reversed", isOn: $isReversed)
-                    .transition(.opacity.combined(with: .move(edge: .trailing))) // 平滑切换
+                    .transition(.opacity.combined(with: .move(edge: .trailing)))
             }
             .padding(.vertical, 8)
             .padding(.horizontal, 8)
@@ -142,14 +142,24 @@ struct ContentView: View {
                             .frame(width: 48, height: 48) // Adjust icon size
                             .clipShape(RoundedRectangle(cornerRadius: 6)) // Optional: Rounded corners
                     }
-                VStack(alignment: .leading) {
-                    Text(appName)
-                    if debugMode, let bundleIdentifier = appNameToBundleIdentifier[appName] {
-                        Text(bundleIdentifier)
-                            .font(.caption)
-                            .foregroundColor(.gray)
+                    
+                    VStack(alignment: .leading) {
+                        Text(appName)
+
+                        // Show the "Date Added" when sorted by date
+                        if sortOption == .dateAdded, let dateAdded = appAddedDates[appName] {
+                            Text("Added on: \(formattedDate(dateAdded))")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        
+                        if debugMode, let bundleIdentifier = appNameToBundleIdentifier[appName] {
+                            Text(bundleIdentifier)
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
                     }
-                }
+
                     Spacer()
                     Picker("Input: ", selection: Binding(
                         get: {
@@ -175,7 +185,7 @@ struct ContentView: View {
                                 let name = inputMethodNames[getInputMethodName(inputSource)] ??
                                 ("Unrecognized: " + getInputMethodName(inputSource))
                                 Text(name)
-                                .tag(name)
+                                    .tag(name)
                             }
                             Text("Default: " + defaultInputSourceName)
                                 .tag("Default")
@@ -184,7 +194,7 @@ struct ContentView: View {
                                 let name = inputMethodNames[getInputMethodName(inputSource)] ??
                                 ("Unrecognized: " + getInputMethodName(inputSource))
                                 Text(name)
-                                .tag(name)
+                                    .tag(name)
                             }
                             Text("Default: " + defaultInputSourceName)
                                 .tag("Default")
@@ -212,6 +222,13 @@ struct ContentView: View {
             }
         }
         .padding()
+    }
+
+    func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
     }
     
     func getRecognizedInputSources() {
@@ -280,7 +297,7 @@ struct ContentView: View {
             for appURL in appURLs {
                 let attributes = try? fileManager.attributesOfItem(atPath: appURL.path)
                 if let creationDate = attributes?[.creationDate] as? Date {
-                    appAddedDates[appURL.lastPathComponent] = creationDate
+                    appAddedDates[appURL.deletingPathExtension().lastPathComponent] = creationDate
                 }
             }
             apps = appURLs
