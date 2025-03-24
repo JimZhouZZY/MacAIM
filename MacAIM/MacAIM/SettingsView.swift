@@ -30,11 +30,13 @@ struct SettingsView: View {
     @AppStorage("debugMode") private var debugMode = false
     @AppStorage("showStatusBarIcon") private var showStatusBarIcon = true
     @AppStorage("defaultInputSourceName") private var defaultInputSourceName = "None"
+    @AppStorage("selectedLanguage") private var selectedLanguage = "en"
     
     @State private var inputSources = TISCreateInputSourceList(nil, false).takeRetainedValue() as! [TISInputSource]
     @State private var recognizedInputSources = TISCreateInputSourceList(nil, false)
                                                     .takeRetainedValue() as! [TISInputSource]
     @State private var showAlert = false
+    @State private var showLanguageAlert = false
     @State private var resetConfirmed = false
     @State private var inputMethodNames: [String: String]  = [:]
 
@@ -53,6 +55,26 @@ struct SettingsView: View {
                 }
                 .padding(.horizontal, 10)
                 
+                Section(header: Text("Language Preferences").font(.headline)) {
+                    Picker("Select Language", selection: $selectedLanguage) {
+                        Text("English").tag("en")
+                        Text("Chinese").tag("zh")
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .padding(.vertical, 3)
+                    .padding(.horizontal, 20)
+                    .onChange(of: selectedLanguage) { newValue in
+                        changeLanguage(to: newValue)
+                    }
+                    .alert(isPresented: $showLanguageAlert) {
+                        Alert(
+                            title: Text("Language Changed"),
+                            message: Text("Please restart the app for the language change to take effect."),
+                            dismissButton: .default(Text("OK"))
+                        )
+                    }
+                }
+
                 Section(header: Text("Runtime").font(.headline)) {
                     Picker("Default input method", selection: Binding(
                         get: {
@@ -220,5 +242,12 @@ struct SettingsView: View {
         } else {
             print("mapping.json not found in bundle.")
         }
+    }
+    func changeLanguage(to language: String) {
+        // Update the language setting
+        UserDefaults.standard.set([language], forKey: "AppleLanguages")
+        UserDefaults.standard.synchronize()
+
+        showLanguageAlert = true
     }
 }

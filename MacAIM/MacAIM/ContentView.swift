@@ -47,9 +47,14 @@ struct ContentView: View {
     
 
     enum SortOption: String, CaseIterable {
-        case name = "Name"
-        case dateAdded = "Date Added"
-        case inputMethod = "Input Method"
+        case name = "sort::Name"
+        case dateAdded = "sort::DateAdded"
+        case inputMethod = "sort::InputMethod"
+        
+        var localized: String {
+            print()
+            return NSLocalizedString(self.rawValue, comment: "")
+        }
     }
     
     // Filter the apps based on the search text
@@ -121,7 +126,7 @@ struct ContentView: View {
             HStack {
                 Picker("Sort by: ", selection: $sortOption) {
                     ForEach(SortOption.allCases, id: \.self) { option in
-                        Text(option.rawValue).tag(option)
+                        Text(option.localized).tag(option)
                     }
                 }
                 .pickerStyle(SegmentedPickerStyle())
