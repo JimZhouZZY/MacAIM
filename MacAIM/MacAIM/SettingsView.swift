@@ -34,6 +34,8 @@ struct SettingsView: View {
     @State private var inputSources = TISCreateInputSourceList(nil, false).takeRetainedValue() as! [TISInputSource]
     @State private var recognizedInputSources = TISCreateInputSourceList(nil, false)
                                                     .takeRetainedValue() as! [TISInputSource]
+    @State private var showAlert = false
+    @State private var resetConfirmed = false
     
     let inputMethodNames: [String: String] = [
         "com.apple.keylayout.ABC": "English",
@@ -91,9 +93,28 @@ struct SettingsView: View {
                                 .tag("None")
                         }
                     }
-                    .pickerStyle(MenuPickerStyle()) // Dropdown menu
+                    .pickerStyle(MenuPickerStyle())
                     .padding(.vertical, 1)
                     .padding(.horizontal, 20)
+                    
+                    
+                    Button("Reset preferences") {
+                        //UserDefaults.standard.set(true, forKey: "_clean")
+                        showAlert = true
+                    }
+                    .padding(.vertical, 1)
+                    .padding(.horizontal, 20)
+                    .alert(isPresented: $showAlert) {
+                        Alert(
+                            title: Text("Confirm Reset"),
+                            message: Text("Are you sure you want to reset preferences to default?"),
+                            primaryButton: .destructive(Text("Reset")) {
+                                resetSettings()
+                            },
+                            secondaryButton: .cancel()
+                        )
+                    }
+
                 }
                 .padding(.horizontal, 10)
                 
@@ -129,10 +150,10 @@ struct SettingsView: View {
                 .padding(.top, 10)
             }
             .navigationTitle("Settings")
-            .frame(width: 360, height: 430)
+            .frame(width: 360, height: 450)
             .fixedSize()
         }
-        .frame(width: 360, height: 430)
+        .frame(width: 360, height: 450)
         .fixedSize()
         .onAppear {
             getRecognizedInputSources()  // This triggers when the view appears
@@ -153,6 +174,43 @@ struct SettingsView: View {
             if inputMethodNames[getInputMethodName(inputSource)] != nil {
                 recognizedInputSources.append(inputSource)
             }
+        }
+    }
+    
+    func resetSettings() {
+        do {
+            print("Using default settings")
+            UserDefaults.standard.set(false, forKey: "useDefault")
+            UserDefaults.standard.set(false, forKey: "silentStart")
+            UserDefaults.standard.set(false, forKey: "startAtLogin")
+            UserDefaults.standard.set(false, forKey: "debugMode")
+            UserDefaults.standard.set(true, forKey: "showStatusBarIcon")
+            UserDefaults.standard.set("None", forKey: "defaultInputSourceName")
+            UserDefaults.standard.set(false, forKey: "_showDashboard")
+            UserDefaults.standard.set(false, forKey: "_showStatusBarIcon")
+            UserDefaults.standard.set(false, forKey: "_hideStatusBarIcon")
+            UserDefaults.standard.set(false, forKey: "_updateMenuState")
+            UserDefaults.standard.set(false, forKey: "_clean")
+            var saveDict: [String: String] = [:]
+            let fileManager = FileManager.default
+            var apps: [String] = []
+            let applicationsURL = URL(fileURLWithPath: "/Applications")
+            do {
+                let appURLs = try fileManager.contentsOfDirectory(at: applicationsURL, includingPropertiesForKeys: nil)
+                apps = appURLs
+                    .filter { $0.pathExtension == "app" }
+                    .map { $0.deletingPathExtension().lastPathComponent }
+            } catch {
+                print("Error loading applications: \(error)")
+            }
+            for appName in apps {
+                saveDict[appName] = "Default"
+            }
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(saveDict)
+            UserDefaults.standard.set(data, forKey: "appNameToInputSource")
+        } catch {
+            print("Failed to init default settings: \(error)")
         }
     }
 }

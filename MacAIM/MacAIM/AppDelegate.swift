@@ -27,7 +27,7 @@ import Carbon
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusBarItem: NSStatusItem?
     var window: NSWindow!
-
+    
     let useDefaultKey = "useDefault"
     let startAtLoginKey = "startAtLogin"
     let silentStartKey = "silentStart"
@@ -38,6 +38,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var silentStart = false
     private var debugMode = false
     private var showStatusBarIcon = true
+    
+    @AppStorage("_clean") private var _clean = false
     
     var initing: Bool = true
     
@@ -59,19 +61,45 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             UserDefaults.standard.object(forKey: "_showDashboard") == nil ||
             UserDefaults.standard.object(forKey: "_showStatusBarIcon") == nil ||
             UserDefaults.standard.object(forKey: "_hideStatusBarIcon") == nil ||
-            UserDefaults.standard.object(forKey: "_updateMenuState") == nil)
+            UserDefaults.standard.object(forKey: "_updateMenuState") == nil) ||
+            UserDefaults.standard.object(forKey: "_clean") == nil ||
+            UserDefaults.standard.object(forKey: "appNameToInputSource") == nil ||
+            _clean == true
         {
-            print("Using default settings")
-            UserDefaults.standard.set(false, forKey: useDefaultKey)
-            UserDefaults.standard.set(false, forKey: silentStartKey)
-            UserDefaults.standard.set(false, forKey: startAtLoginKey)
-            UserDefaults.standard.set(false, forKey: debugModeKey)
-            UserDefaults.standard.set(true, forKey: showStatusBarIconKey)
-            UserDefaults.standard.set("None", forKey: "defaultInputSourceName")
-            UserDefaults.standard.set(false, forKey: "_showDashboard")
-            UserDefaults.standard.set(false, forKey: "_showStatusBarIcon")
-            UserDefaults.standard.set(false, forKey: "_hideStatusBarIcon")
-            UserDefaults.standard.set(false, forKey: "_updateMenuState")
+            do {
+                print("Using default settings")
+                UserDefaults.standard.set(false, forKey: useDefaultKey)
+                UserDefaults.standard.set(false, forKey: silentStartKey)
+                UserDefaults.standard.set(false, forKey: startAtLoginKey)
+                UserDefaults.standard.set(false, forKey: debugModeKey)
+                UserDefaults.standard.set(true, forKey: showStatusBarIconKey)
+                UserDefaults.standard.set("None", forKey: "defaultInputSourceName")
+                UserDefaults.standard.set(false, forKey: "_showDashboard")
+                UserDefaults.standard.set(false, forKey: "_showStatusBarIcon")
+                UserDefaults.standard.set(false, forKey: "_hideStatusBarIcon")
+                UserDefaults.standard.set(false, forKey: "_updateMenuState")
+                UserDefaults.standard.set(false, forKey: "_clean")
+                var saveDict: [String: String] = [:]
+                var apps: [String] = []
+                let fileManager = FileManager.default
+                let applicationsURL = URL(fileURLWithPath: "/Applications")
+                do {
+                    let appURLs = try fileManager.contentsOfDirectory(at: applicationsURL, includingPropertiesForKeys: nil)
+                    apps = appURLs
+                        .filter { $0.pathExtension == "app" }
+                        .map { $0.deletingPathExtension().lastPathComponent }
+                } catch {
+                    print("Error loading applications: \(error)")
+                }
+                for appName in apps {
+                    saveDict[appName] = "Default"
+                }
+                let encoder = JSONEncoder()
+                let data = try encoder.encode(saveDict)
+                UserDefaults.standard.set(data, forKey: "appNameToInputSource")
+            } catch {
+                print("Failed to init default settings: \(error)")
+            }
         }
         
         // Initialize the window

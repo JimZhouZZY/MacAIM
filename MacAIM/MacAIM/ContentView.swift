@@ -161,7 +161,7 @@ struct ContentView: View {
                     }
                 }
                     Spacer()
-                    Picker("Input Method", selection: Binding(
+                    Picker("Input: ", selection: Binding(
                         get: {
                             if let inputSource = appNameToInputSource[appName],
                                let inputMethodName = inputMethodNames[getInputMethodName(inputSource!)] {
@@ -297,10 +297,6 @@ struct ContentView: View {
                 .map { $0.deletingPathExtension().lastPathComponent }
             
             for appName in apps {
-                if appNameToInputSource[appName] == nil {
-                    appNameToInputSource[appName] = inputSources.first
-                }
-
                 let appPath = "/Applications/\(appName).app"
                 if let bundle = Bundle(url: URL(fileURLWithPath: appPath)), let bundleIdentifier = bundle.bundleIdentifier {
                     appNameToBundleIdentifier[appName] = bundleIdentifier
