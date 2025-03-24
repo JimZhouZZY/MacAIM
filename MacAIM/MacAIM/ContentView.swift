@@ -32,18 +32,19 @@ struct ContentView: View {
     @State private var apps: [String] = []
     @State private var defaultInputSource: TISInputSource? = nil
     @State private var currentAppName: String? = nil
-    @State private var selectedApp: String?  // Store the selected app
+    @State private var selectedApp: String?
     @State private var searchText: String = ""  // Search text for filtering
     @State private var appNameToInputSource: [String: TISInputSource?] = [:]
     @State private var sortOption: SortOption = .name
     @State private var appAddedDates: [String: Date] = [:]
-    @State private var isReversed: Bool = false // Added state variable for reverse sorting
+    @State private var isReversed: Bool = false // Is sorting result reverted
     @State private var inputSources = TISCreateInputSourceList(nil, false).takeRetainedValue() as! [TISInputSource]
     @State private var recognizedInputSources = TISCreateInputSourceList(nil, false)
                                                     .takeRetainedValue() as! [TISInputSource]
     @State private var appNameToBundleIdentifier: [String: String] = [:]
     @State private var bundleIdentifierToAppName: [String: String] = [:]
     @State private var inputMethodNames: [String: String] = [:]
+    @State private var settingsWindow: NSWindow?
     
 
     enum SortOption: String, CaseIterable {
@@ -228,6 +229,40 @@ struct ContentView: View {
         }
         .padding()
     }
+    
+    func mainLoop() {
+        // This method is robust enough, I think
+        // Run the loop in a background thread
+        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+            let retval: (String?, String?) = getCurrentAppName()
+            let appBundleIdentidier = retval.0 ?? ""
+            if appBundleIdentidier != "" {
+                let lastAppBundleIdentidier = retval.1 ?? ""
+                // Only trigger when the app name changes
+                if !(appBundleIdentidier == lastAppBundleIdentidier) {
+                    let appName = bundleIdentifierToAppName[appBundleIdentidier] ?? appBundleIdentidier
+                    print("User is now using: \(appBundleIdentidier)")
+                    if let inputSource = appNameToInputSource[appName] {
+                        // Is this dispatch neccesarry?
+                        DispatchQueue.main.async {
+                            self.switchInputSource(to: inputSource!)
+                        }
+                    } else if defaultInputSourceName != "None" {
+                        // Ditto
+                        DispatchQueue.main.async {
+                            if let inputSource = inputSources.first(where: { inputMethodNames[getInputMethodName($0)] == defaultInputSourceName }) {
+                                self.switchInputSource(to: inputSource)
+                            }
+                        }
+                    } else {
+                        print("No input method found for \(appName)")
+                    }
+                }
+            } else {
+                print("Unable to get the current app name")
+            }
+        }
+    }
 
     func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
@@ -321,50 +356,27 @@ struct ContentView: View {
         }
     }
     
-    func mainLoop() {
-        // This method is robust enough, I think
-        // Run the loop in a background thread
-        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
-            let retval: (String?, String?) = getCurrentAppName()
-            let appBundleIdentidier = retval.0 ?? ""
-            if appBundleIdentidier != "" {
-                let lastAppBundleIdentidier = retval.1 ?? ""
-                // print("User is now using: \(appBundleIdentidier)")
-                // Only trigger when the app name changes
-                if !(appBundleIdentidier == lastAppBundleIdentidier) {
-                    let appName = bundleIdentifierToAppName[appBundleIdentidier] ?? appBundleIdentidier
-                    print("User is now using: \(appBundleIdentidier)")
-                    if let inputSource = appNameToInputSource[appName] {
-                        // Ensure switchInputMethod is called on the main thread
-                        DispatchQueue.main.async {
-                            self.switchInputSource(to: inputSource!)
-                        }
-                    } else if defaultInputSourceName != "None" {
-                        // Ensure switchInputMethod is called on the main thread
-                        DispatchQueue.main.async {
-                            if let inputSource = inputSources.first(where: { inputMethodNames[getInputMethodName($0)] == defaultInputSourceName }) {
-                                self.switchInputSource(to: inputSource)
-                            }
-                        }
-                    } else {
-                        print("No input method found for \(appName)")
-                    }
-                }
-            } else {
-                print("Unable to get the current app name")
+    func loadInputMethodNames() {
+        // Access the file from the app's bundle
+        if let filePath = Bundle.main.path(forResource: "mapping", ofType: "json") {
+            let fileURL = URL(fileURLWithPath: filePath)
+            
+            do {
+                let data = try Data(contentsOf: fileURL)
+                let decoder = JSONDecoder()
+                inputMethodNames = try decoder.decode([String: String].self, from: data)
+            } catch {
+                print("Failed to load input method names: \(error)")
             }
+        } else {
+            print("mapping.json not found in bundle.")
         }
-        
-        // Start the RunLoop
-        // RunLoop.current.run()
     }
     
     func switchInputSource(to inputSource: TISInputSource) {
         TISSelectInputSource(inputSource)
         return
     }
-    
-    @State private var settingsWindow: NSWindow?
 
     func openSettingsWindow() {
         if let window = settingsWindow, window.isVisible {
@@ -405,23 +417,6 @@ struct ContentView: View {
             UserDefaults.standard.set(true, forKey: "_showStatusBarIcon")
         }
     }
-    
-    func loadInputMethodNames() {
-        // Access the file from the app's bundle
-        if let filePath = Bundle.main.path(forResource: "mapping", ofType: "json") {
-            let fileURL = URL(fileURLWithPath: filePath)
-            
-            do {
-                let data = try Data(contentsOf: fileURL)
-                let decoder = JSONDecoder()
-                inputMethodNames = try decoder.decode([String: String].self, from: data)
-            } catch {
-                print("Failed to load input method names: \(error)")
-            }
-        } else {
-            print("mapping.json not found in bundle.")
-        }
-    }
 }
 
 var lastAppBundleIdentifier = ""
@@ -429,7 +424,6 @@ func getCurrentAppName() -> (String, String) {
     let lastlastAppBundleIdentifier = lastAppBundleIdentifier
     if let frontApp = NSWorkspace.shared.menuBarOwningApplication {
         lastAppBundleIdentifier = frontApp.bundleIdentifier ?? ""
-        // print(time(), frontApp)
         return (lastAppBundleIdentifier, lastlastAppBundleIdentifier)
     }
     return ("", lastlastAppBundleIdentifier)

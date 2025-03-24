@@ -42,20 +42,52 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @AppStorage("_clean") private var _clean = false
     
     var initing: Bool = true
-
-    @objc func applicationDidActivate(_ notification: Notification) {
-        //print(time()+"Notification received: \(notification.name.rawValue)")
-        //print(getCurrentAppName())
+    
+    func mainLoop() {
+        while true {
+            if let _showDashboard = UserDefaults.standard.object(forKey: "_showDashboard") {
+                if _showDashboard as! Bool {
+                    print("_showDashboard")
+                    DispatchQueue.main.async {
+                        self.showWindow()
+                        UserDefaults.standard.set(false, forKey: "_showDashboard")
+                    }
+                }
+            }
+            if let _showStatusBarIcon = UserDefaults.standard.object(forKey: "_showStatusBarIcon") {
+                if _showStatusBarIcon as! Bool {
+                    print("_showStatusBarIcon")
+                    DispatchQueue.main.async {
+                        self.createStatusBarItem()
+                        UserDefaults.standard.set(false, forKey: "_showStatusBarIcon")
+                    }
+                }
+            }
+            if let _hideStatusBarIcon = UserDefaults.standard.object(forKey: "_hideStatusBarIcon") {
+                if _hideStatusBarIcon as! Bool {
+                    print("_hideStatusBarIcon")
+                    DispatchQueue.main.async {
+                        self.removeStatusBarItem()
+                        UserDefaults.standard.set(false, forKey: "_hideStatusBarIcon")
+                    }
+                }
+            }
+            if let _updateMenuState = UserDefaults.standard.object(forKey: "_updateMenuState") {
+                if _updateMenuState as! Bool {
+                    print("_updateMenuState")
+                    DispatchQueue.main.async {
+                        self.loadConfig()
+                        self.updateMenuState()
+                        UserDefaults.standard.set(false, forKey: "_updateMenuState")
+                    }
+                }
+            }
+            // sleeps for 100 ms
+            usleep(100000)
+        }
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(applicationDidActivate(_:)),
-                                               name: NSWindow.didChangeOcclusionStateNotification,
-                                               object: nil)
-        NotificationCenter.default.addObserver(forName: nil, object: nil, queue: nil) { notification in
-            //print(time()+"Notification received: \(notification.name.rawValue)")
-        }
         // Hide dock icon
         NSApp.setActivationPolicy(.accessory)
         
@@ -141,17 +173,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if showStatusBarIcon {
             createStatusBarItem()
         }
-        
-        // Set up the menu bar
-        //
-        // **************** Not finished yet **************** //
-        // let mainMenu = NSMenu()
-        // let appMenu = NSMenu(title: "MacAIM")
-        // let appMenuItem = NSMenuItem()
-        // appMenuItem.submenu = appMenu
-        // mainMenu.addItem(appMenuItem)
-        // NSApp.mainMenu = mainMenu
-        // **************** Not finished yet **************** //
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             self.initing = false
@@ -249,50 +270,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Update the menu item state
         if let item = statusBarItem?.menu?.item(withTitle: "Silent start") {
             item.state = silentStart ? .on : .off
-        }
-    }
-    
-    func mainLoop() {
-        while true {
-            if let _showDashboard = UserDefaults.standard.object(forKey: "_showDashboard") {
-                if _showDashboard as! Bool {
-                    print("_showDashboard")
-                    DispatchQueue.main.async {
-                        self.showWindow()
-                        UserDefaults.standard.set(false, forKey: "_showDashboard")
-                    }
-                }
-            }
-            if let _showStatusBarIcon = UserDefaults.standard.object(forKey: "_showStatusBarIcon") {
-                if _showStatusBarIcon as! Bool {
-                    print("_showStatusBarIcon")
-                    DispatchQueue.main.async {
-                        self.createStatusBarItem()
-                        UserDefaults.standard.set(false, forKey: "_showStatusBarIcon")
-                    }
-                }
-            }
-            if let _hideStatusBarIcon = UserDefaults.standard.object(forKey: "_hideStatusBarIcon") {
-                if _hideStatusBarIcon as! Bool {
-                    print("_hideStatusBarIcon")
-                    DispatchQueue.main.async {
-                        self.removeStatusBarItem()
-                        UserDefaults.standard.set(false, forKey: "_hideStatusBarIcon")
-                    }
-                }
-            }
-            if let _updateMenuState = UserDefaults.standard.object(forKey: "_updateMenuState") {
-                if _updateMenuState as! Bool {
-                    print("_updateMenuState")
-                    DispatchQueue.main.async {
-                        self.loadConfig()
-                        self.updateMenuState()
-                        UserDefaults.standard.set(false, forKey: "_updateMenuState")
-                    }
-                }
-            }
-            // sleeps for 100 ms
-            usleep(100000)
         }
     }
     

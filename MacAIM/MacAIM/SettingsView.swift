@@ -111,7 +111,6 @@ struct SettingsView: View {
                     
                     
                     Button("Reset preferences") {
-                        //UserDefaults.standard.set(true, forKey: "_clean")
                         showAlert = true
                     }
                     .padding(.vertical, 1)
@@ -247,7 +246,6 @@ struct SettingsView: View {
         // Update the language setting
         UserDefaults.standard.set([language], forKey: "AppleLanguages")
         UserDefaults.standard.synchronize()
-
         showLanguageAlert = true
     }
 }
