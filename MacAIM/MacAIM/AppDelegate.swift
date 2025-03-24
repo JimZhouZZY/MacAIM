@@ -42,8 +42,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @AppStorage("_clean") private var _clean = false
     
     var initing: Bool = true
-    
+
+    @objc func applicationDidActivate(_ notification: Notification) {
+        //print(time()+"Notification received: \(notification.name.rawValue)")
+        //print(getCurrentAppName())
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(applicationDidActivate(_:)),
+                                               name: NSWindow.didChangeOcclusionStateNotification,
+                                               object: nil)
+        NotificationCenter.default.addObserver(forName: nil, object: nil, queue: nil) { notification in
+            //print(time()+"Notification received: \(notification.name.rawValue)")
+        }
         // Hide dock icon
         NSApp.setActivationPolicy(.accessory)
         

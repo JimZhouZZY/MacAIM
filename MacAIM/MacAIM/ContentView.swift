@@ -322,40 +322,41 @@ struct ContentView: View {
     }
     
     func mainLoop() {
+        // This method is robust enough, I think
         // Run the loop in a background thread
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                let retval: (String?, String?) = getCurrentAppName()
-                let appBundleIdentidier = retval.0 ?? ""
-                if appBundleIdentidier != "" {
-                    let lastAppBundleIdentidier = retval.1 ?? ""
-                    // Only trigger when the app name changes
-                    if !(appBundleIdentidier == lastAppBundleIdentidier) {
-                        let appName = bundleIdentifierToAppName[appBundleIdentidier] ?? appBundleIdentidier
-                        print("User is now using: \(appBundleIdentidier)")
-                        if let inputSource = appNameToInputSource[appName] {
-                            // Ensure switchInputMethod is called on the main thread
-                            DispatchQueue.main.async {
-                                self.switchInputSource(to: inputSource!)
-                            }
-                        } else if defaultInputSourceName != "None" {
-                            // Ensure switchInputMethod is called on the main thread
-                            DispatchQueue.main.async {
-                                if let inputSource = inputSources.first(where: { inputMethodNames[getInputMethodName($0)] == defaultInputSourceName }) {
-                                    self.switchInputSource(to: inputSource)
-                                }
-                            }
-                        } else {
-                            print("No input method found for \(appName)")
+        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+            let retval: (String?, String?) = getCurrentAppName()
+            let appBundleIdentidier = retval.0 ?? ""
+            if appBundleIdentidier != "" {
+                let lastAppBundleIdentidier = retval.1 ?? ""
+                // print("User is now using: \(appBundleIdentidier)")
+                // Only trigger when the app name changes
+                if !(appBundleIdentidier == lastAppBundleIdentidier) {
+                    let appName = bundleIdentifierToAppName[appBundleIdentidier] ?? appBundleIdentidier
+                    print("User is now using: \(appBundleIdentidier)")
+                    if let inputSource = appNameToInputSource[appName] {
+                        // Ensure switchInputMethod is called on the main thread
+                        DispatchQueue.main.async {
+                            self.switchInputSource(to: inputSource!)
                         }
+                    } else if defaultInputSourceName != "None" {
+                        // Ensure switchInputMethod is called on the main thread
+                        DispatchQueue.main.async {
+                            if let inputSource = inputSources.first(where: { inputMethodNames[getInputMethodName($0)] == defaultInputSourceName }) {
+                                self.switchInputSource(to: inputSource)
+                            }
+                        }
+                    } else {
+                        print("No input method found for \(appName)")
                     }
-                } else {
-                    print("Unable to get the current app name")
                 }
-                // sleeps for 50 ms
-                usleep(50000)
+            } else {
+                print("Unable to get the current app name")
             }
         }
+        
+        // Start the RunLoop
+        // RunLoop.current.run()
     }
     
     func switchInputSource(to inputSource: TISInputSource) {
@@ -426,9 +427,18 @@ struct ContentView: View {
 var lastAppBundleIdentifier = ""
 func getCurrentAppName() -> (String, String) {
     let lastlastAppBundleIdentifier = lastAppBundleIdentifier
-    if let frontApp = NSWorkspace.shared.frontmostApplication {
+    if let frontApp = NSWorkspace.shared.menuBarOwningApplication {
         lastAppBundleIdentifier = frontApp.bundleIdentifier ?? ""
+        // print(time(), frontApp)
         return (lastAppBundleIdentifier, lastlastAppBundleIdentifier)
     }
     return ("", lastlastAppBundleIdentifier)
 }
+
+func time() -> String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "HH:mm:ss"
+    let currentDate = Date()
+    return formatter.string(from: currentDate)
+}
+
