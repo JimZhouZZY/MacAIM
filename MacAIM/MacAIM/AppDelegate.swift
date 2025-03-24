@@ -55,6 +55,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             UserDefaults.standard.object(forKey: startAtLoginKey) == nil ||
             UserDefaults.standard.object(forKey: debugModeKey) == nil ||
             UserDefaults.standard.object(forKey: showStatusBarIconKey) == nil ||
+            UserDefaults.standard.object(forKey: "defaultInputSourceName") == nil ||
             UserDefaults.standard.object(forKey: "_showDashboard") == nil ||
             UserDefaults.standard.object(forKey: "_showStatusBarIcon") == nil ||
             UserDefaults.standard.object(forKey: "_hideStatusBarIcon") == nil ||
@@ -66,6 +67,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             UserDefaults.standard.set(false, forKey: startAtLoginKey)
             UserDefaults.standard.set(false, forKey: debugModeKey)
             UserDefaults.standard.set(true, forKey: showStatusBarIconKey)
+            UserDefaults.standard.set("None", forKey: "defaultInputSourceName")
             UserDefaults.standard.set(false, forKey: "_showDashboard")
             UserDefaults.standard.set(false, forKey: "_showStatusBarIcon")
             UserDefaults.standard.set(false, forKey: "_hideStatusBarIcon")

@@ -27,8 +27,10 @@ struct ContentView: View {
     var settingsWindowController: NSWindowController?
     
     @AppStorage("debugMode") var debugMode: Bool = false
+    @AppStorage("defaultInputSourceName") private var defaultInputSourceName = "None"
     
     @State private var apps: [String] = []
+    @State private var defaultInputSource: TISInputSource? = nil
     @State private var currentAppName: String? = nil
     @State private var selectedApp: String?  // Store the selected app
     @State private var searchText: String = ""  // Search text for filtering
@@ -161,26 +163,41 @@ struct ContentView: View {
                     Spacer()
                     Picker("Input Method", selection: Binding(
                         get: {
-                            return appNameToInputSource[appName] ?? inputSources.first!
+                            if let inputSource = appNameToInputSource[appName],
+                               let inputMethodName = inputMethodNames[getInputMethodName(inputSource!)] {
+                                return inputMethodName
+                            }
+                            return "Default"  // Return a default value when no input method is available
                         },
-                        set: { newValue in
-                            appNameToInputSource[appName] = newValue
+                        set: { (newValue: String) in
+                            if let inputSource = inputSources.first(where: { inputMethodNames[getInputMethodName($0)] == newValue }) {
+                                appNameToInputSource[appName] = inputSource
+                            } else {
+                                // Handle case where inputSource is not found
+                                appNameToInputSource[appName] = nil
+                            }
                             saveInputMethods()
                         }
                     )) {
                         if !debugMode {
                             // TODO: sort it
                             ForEach(recognizedInputSources, id: \.self) { inputSource in
-                                Text(inputMethodNames[getInputMethodName(inputSource)] ??
-                                     ("Unrecognized: " + getInputMethodName(inputSource)))
-                                .tag(inputSource)
+                                let name = inputMethodNames[getInputMethodName(inputSource)] ??
+                                ("Unrecognized: " + getInputMethodName(inputSource))
+                                Text(name)
+                                .tag(name)
                             }
+                            Text("Default: " + defaultInputSourceName)
+                                .tag("Default")
                         } else {
                             ForEach(inputSources, id: \.self) { inputSource in
-                                Text(inputMethodNames[getInputMethodName(inputSource)] ??
-                                     ("Unrecognized: " + getInputMethodName(inputSource)))
-                                .tag(inputSource)
+                                let name = inputMethodNames[getInputMethodName(inputSource)] ??
+                                ("Unrecognized: " + getInputMethodName(inputSource))
+                                Text(name)
+                                .tag(name)
                             }
+                            Text("Default: " + defaultInputSourceName)
+                                .tag("Default")
                         }
                     }
                     .pickerStyle(MenuPickerStyle()) // Dropdown menu
@@ -307,10 +324,17 @@ struct ContentView: View {
                     if !(appBundleIdentidier == lastAppBundleIdentidier) {
                         let appName = bundleIdentifierToAppName[appBundleIdentidier] ?? appBundleIdentidier
                         print("User is now using: \(appBundleIdentidier)")
-                        if let inputSource = appNameToInputSource[appName] ?? inputSources.first {
+                        if let inputSource = appNameToInputSource[appName] {
                             // Ensure switchInputMethod is called on the main thread
                             DispatchQueue.main.async {
-                                self.switchInputSource(to: inputSource)
+                                self.switchInputSource(to: inputSource!)
+                            }
+                        } else if defaultInputSourceName != "None" {
+                            // Ensure switchInputMethod is called on the main thread
+                            DispatchQueue.main.async {
+                                if let inputSource = inputSources.first(where: { inputMethodNames[getInputMethodName($0)] == defaultInputSourceName }) {
+                                    self.switchInputSource(to: inputSource)
+                                }
                             }
                         } else {
                             print("No input method found for \(appName)")
