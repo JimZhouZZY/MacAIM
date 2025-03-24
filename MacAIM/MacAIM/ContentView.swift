@@ -43,24 +43,14 @@ struct ContentView: View {
                                                     .takeRetainedValue() as! [TISInputSource]
     @State private var appNameToBundleIdentifier: [String: String] = [:]
     @State private var bundleIdentifierToAppName: [String: String] = [:]
+    @State private var inputMethodNames: [String: String] = [:]
+    
 
     enum SortOption: String, CaseIterable {
         case name = "Name"
         case dateAdded = "Date Added"
         case inputMethod = "Input Method"
     }
-
-    // Define a dictionary to map system input source IDs to user-friendly names
-    let inputMethodNames: [String: String] = [
-        "com.apple.keylayout.ABC": "English",
-        "com.apple.inputmethod.SCIM.ITABC": "Pinyin - Simplified",
-        "com.apple.keylayout.US": "US Keyboard",
-        "com.apple.inputmethod.Kotoeri": "Japanese - Kotoeri",
-        "com.apple.inputmethod.SimplifiedChinese": "Simplified Chinese",
-        "com.apple.inputmethod.TCIM.Pinyin": "Pinyin - Traditional",
-        "com.tencent.inputmethod.wetype.pinyin": "Pinyin - WeType"
-        // TODO: more mappings
-    ]
     
     // Filter the apps based on the search text
     var filteredApps: [String] {
@@ -214,6 +204,7 @@ struct ContentView: View {
                 .padding(.vertical, 8)
             }
             .onAppear {
+                loadInputMethodNames()
                 loadApplications()
                 loadInputMethods()
                 getRecognizedInputSources()
@@ -389,6 +380,23 @@ struct ContentView: View {
             UserDefaults.standard.set(true, forKey: "_hideStatusBarIcon")
         } else {
             UserDefaults.standard.set(true, forKey: "_showStatusBarIcon")
+        }
+    }
+    
+    func loadInputMethodNames() {
+        // Access the file from the app's bundle
+        if let filePath = Bundle.main.path(forResource: "mapping", ofType: "json") {
+            let fileURL = URL(fileURLWithPath: filePath)
+            
+            do {
+                let data = try Data(contentsOf: fileURL)
+                let decoder = JSONDecoder()
+                inputMethodNames = try decoder.decode([String: String].self, from: data)
+            } catch {
+                print("Failed to load input method names: \(error)")
+            }
+        } else {
+            print("mapping.json not found in bundle.")
         }
     }
 }

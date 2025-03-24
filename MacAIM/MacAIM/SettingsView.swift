@@ -36,17 +36,7 @@ struct SettingsView: View {
                                                     .takeRetainedValue() as! [TISInputSource]
     @State private var showAlert = false
     @State private var resetConfirmed = false
-    
-    let inputMethodNames: [String: String] = [
-        "com.apple.keylayout.ABC": "English",
-        "com.apple.inputmethod.SCIM.ITABC": "Pinyin - Simplified",
-        "com.apple.keylayout.US": "US Keyboard",
-        "com.apple.inputmethod.Kotoeri": "Japanese - Kotoeri",
-        "com.apple.inputmethod.SimplifiedChinese": "Simplified Chinese",
-        "com.apple.inputmethod.TCIM.Pinyin": "Pinyin - Traditional",
-        "com.tencent.inputmethod.wetype.pinyin": "Pinyin - WeType"
-        // TODO: more mappings
-    ]
+    @State private var inputMethodNames: [String: String]  = [:]
 
     var body: some View {
         NavigationView {
@@ -156,6 +146,7 @@ struct SettingsView: View {
         .frame(width: 360, height: 450)
         .fixedSize()
         .onAppear {
+            loadInputMethodNames()
             getRecognizedInputSources()  // This triggers when the view appears
         }
     }
@@ -211,6 +202,23 @@ struct SettingsView: View {
             UserDefaults.standard.set(data, forKey: "appNameToInputSource")
         } catch {
             print("Failed to init default settings: \(error)")
+        }
+    }
+    
+    func loadInputMethodNames() {
+        // Access the file from the app's bundle
+        if let filePath = Bundle.main.path(forResource: "mapping", ofType: "json") {
+            let fileURL = URL(fileURLWithPath: filePath)
+            
+            do {
+                let data = try Data(contentsOf: fileURL)
+                let decoder = JSONDecoder()
+                inputMethodNames = try decoder.decode([String: String].self, from: data)
+            } catch {
+                print("Failed to load input method names: \(error)")
+            }
+        } else {
+            print("mapping.json not found in bundle.")
         }
     }
 }
