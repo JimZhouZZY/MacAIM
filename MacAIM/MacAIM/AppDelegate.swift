@@ -295,7 +295,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let statusBarItem = statusBarItem {
             if let button = statusBarItem.button {
-                let title = NSMutableAttributedString(string: "AiM", attributes: [
+                let title = NSMutableAttributedString(string: "iM", attributes: [
                     .font: NSFont.boldSystemFont(ofSize: NSFont.systemFontSize),
                     .strokeWidth: -2.0
                 ])

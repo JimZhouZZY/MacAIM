@@ -46,12 +46,16 @@ struct SettingsView: View {
                 Section(header: Text("General Preferences").font(.headline)) {
                     Toggle("Start at login", isOn: $startAtLogin)
                         .padding(.vertical, 3)
+                        .padding(.horizontal, 20)
                     Toggle("Silent start", isOn: $silentStart)
                         .padding(.vertical, 3)
+                        .padding(.horizontal, 20)
                     Toggle("Debug mode", isOn: $debugMode)
                         .padding(.vertical, 3)
+                        .padding(.horizontal, 20)
                     Toggle("Status icon", isOn: $showStatusBarIcon)
                         .padding(.vertical, 3)
+                        .padding(.horizontal, 20)
                 }
                 .padding(.horizontal, 10)
                 
@@ -74,6 +78,7 @@ struct SettingsView: View {
                         )
                     }
                 }
+                .padding(.horizontal, 10)
 
                 Section(header: Text("Runtime").font(.headline)) {
                     Picker("Default input method", selection: Binding(
