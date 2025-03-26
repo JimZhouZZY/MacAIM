@@ -169,20 +169,38 @@ struct ContentView: View {
                     Spacer()
                     Picker("Input: ", selection: Binding(
                         get: {
-                            if let inputSource = appNameToInputSource[appName],
-                               let inputMethodName = inputMethodNames[getInputMethodName(inputSource!)] {
-                                return inputMethodName
+                            if let inputSource = appNameToInputSource[appName]{
+                                print(debugMode)
+                                if let inputMethodName = inputMethodNames[getInputMethodName(inputSource!)] {
+                                    return inputMethodName
+                                }
+                                else if debugMode {
+                                    let inputMethod = getInputMethodName(inputSource!)
+                                    return inputMethod
+                                }
                             }
                             return "Default"  // Return a default value when no input method is available
                         },
                         set: { (newValue: String) in
-                            if let inputSource = inputSources.first(where: { inputMethodNames[getInputMethodName($0)] == newValue }) {
-                                appNameToInputSource[appName] = inputSource
+                            if !debugMode {
+                                if let inputSource = inputSources.first(where: { inputMethodNames[getInputMethodName($0)] == newValue }) {
+                                    appNameToInputSource[appName] = inputSource
+                                } else {
+                                    // Handle case where inputSource is not found
+                                    appNameToInputSource[appName] = nil
+                                }
+                                saveInputMethods()
                             } else {
-                                // Handle case where inputSource is not found
-                                appNameToInputSource[appName] = nil
+                                if let inputSource = inputSources.first(where: { inputMethodNames[getInputMethodName($0)] == newValue }) {
+                                    appNameToInputSource[appName] = inputSource
+                                } else if let inputSource = inputSources.first(where: { getInputMethodName($0) == newValue }) {
+                                    appNameToInputSource[appName] = inputSource
+                                } else {
+                                    // Handle case where inputSource is not found
+                                    appNameToInputSource[appName] = nil
+                                }
+                                saveInputMethods()
                             }
-                            saveInputMethods()
                         }
                     )) {
                         if !debugMode {
@@ -191,7 +209,7 @@ struct ContentView: View {
                                 let name = inputMethodNames[getInputMethodName(inputSource)] ??
                                 ("Unrecognized: " + getInputMethodName(inputSource))
                                 Text(name)
-                                    .tag(name)
+                                    .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
                             }
                             Text("Default: " + defaultInputSourceName)
                                 .tag("Default")
@@ -200,7 +218,7 @@ struct ContentView: View {
                                 let name = inputMethodNames[getInputMethodName(inputSource)] ??
                                 ("Unrecognized: " + getInputMethodName(inputSource))
                                 Text(name)
-                                    .tag(name)
+                                    .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
                             }
                             Text("Default: " + defaultInputSourceName)
                                 .tag("Default")

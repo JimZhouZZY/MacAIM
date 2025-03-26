@@ -89,26 +89,22 @@ struct SettingsView: View {
                             UserDefaults.standard.set(newValue, forKey: "defaultInputSourceName")
                         }
                     )) {
-                        if !debugMode {
-                            // TODO: sort it
-                            ForEach(recognizedInputSources, id: \.self) { inputSource in
-                                let name = inputMethodNames[getInputMethodName(inputSource)] ??
-                                ("Unrecognized: " + getInputMethodName(inputSource))
-                                Text(name)
-                                .tag(name)
-                            }
-                            Text("None")
-                                .tag("None")
-                        } else {
-                            ForEach(inputSources, id: \.self) { inputSource in
-                                let name = inputMethodNames[getInputMethodName(inputSource)] ??
-                                ("Unrecognized: " + getInputMethodName(inputSource))
-                                Text(name)
-                                .tag(name)
-                            }
-                            Text("None")
-                                .tag("None")
+                        ForEach(recognizedInputSources, id: \.self) { inputSource in
+                            let name = inputMethodNames[getInputMethodName(inputSource)] ??
+                            ("Unrecognized: " + getInputMethodName(inputSource))
+                            Text(name)
+                                .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
                         }
+                        ForEach(inputSources, id: \.self) { inputSource in
+                            if !recognizedInputSources.contains(inputSource) {
+                                let name = inputMethodNames[getInputMethodName(inputSource)] ??
+                                ("Unrecognized: " + getInputMethodName(inputSource))
+                                Text(name)
+                                    .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
+                            }
+                        }
+                        Text("None")
+                            .tag("None")
                     }
                     .pickerStyle(MenuPickerStyle())
                     .padding(.vertical, 1)

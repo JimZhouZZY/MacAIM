@@ -267,7 +267,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = "1.1.0-beta.10";
+				MARKETING_VERSION = "1.1.0-unstable";
 				PRODUCT_BUNDLE_IDENTIFIER = jimzhou.MacAIM;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -296,7 +296,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = "1.1.0-beta.10";
+				MARKETING_VERSION = "1.1.0-unstable";
 				PRODUCT_BUNDLE_IDENTIFIER = jimzhou.MacAIM;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
