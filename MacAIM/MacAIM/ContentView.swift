@@ -426,7 +426,14 @@ struct ContentView: View {
                 // It is hard to search for this line ...
                 if let name = Unmanaged<CFString>.fromOpaque(localizedName).takeUnretainedValue() as String? {
                     //print(name)
-                    inputMethodNames[getInputMethodName(inputSource)] = name
+                    if let cateptr = TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceCategory) {
+                        if let category = Unmanaged<CFString>.fromOpaque(cateptr).takeUnretainedValue() as String? {
+                            //print(category)
+                            if category == "TISCategoryKeyboardInputSource"{
+                                inputMethodNames[getInputMethodName(inputSource)] = name
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -89,22 +89,33 @@ struct SettingsView: View {
                             UserDefaults.standard.set(newValue, forKey: "defaultInputSourceName")
                         }
                     )) {
-                        ForEach(recognizedInputSources, id: \.self) { inputSource in
-                            let name = inputMethodNames[getInputMethodName(inputSource)] ??
-                            ("Unrecognized: " + getInputMethodName(inputSource))
-                            Text(name)
-                                .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
-                        }
-                        ForEach(inputSources, id: \.self) { inputSource in
-                            if !recognizedInputSources.contains(inputSource) {
+                        if !debugMode {
+                            ForEach(recognizedInputSources, id: \.self) { inputSource in
                                 let name = inputMethodNames[getInputMethodName(inputSource)] ??
                                 ("Unrecognized: " + getInputMethodName(inputSource))
                                 Text(name)
                                     .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
                             }
+                            Text("None")
+                                .tag("None")
+                        } else {
+                            ForEach(recognizedInputSources, id: \.self) { inputSource in
+                                let name = inputMethodNames[getInputMethodName(inputSource)] ??
+                                ("Unrecognized: " + getInputMethodName(inputSource))
+                                Text(name)
+                                    .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
+                            }
+                            ForEach(inputSources, id: \.self) { inputSource in
+                                if !recognizedInputSources.contains(inputSource) {
+                                    let name = inputMethodNames[getInputMethodName(inputSource)] ??
+                                    ("Unrecognized: " + getInputMethodName(inputSource))
+                                    Text(name)
+                                        .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
+                                }
+                            }
+                            Text("None")
+                                .tag("None")
                         }
-                        Text("None")
-                            .tag("None")
                     }
                     .pickerStyle(MenuPickerStyle())
                     .padding(.vertical, 1)
@@ -247,7 +258,14 @@ struct SettingsView: View {
                 // It is hard to search for this line ...
                 if let name = Unmanaged<CFString>.fromOpaque(localizedName).takeUnretainedValue() as String? {
                     //print(name)
-                    inputMethodNames[getInputMethodName(inputSource)] = name
+                    if let cateptr = TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceCategory) {
+                        if let category = Unmanaged<CFString>.fromOpaque(cateptr).takeUnretainedValue() as String? {
+                            //print(category)
+                            if category == "TISCategoryKeyboardInputSource"{
+                                inputMethodNames[getInputMethodName(inputSource)] = name
+                            }
+                        }
+                    }
                 }
             }
         }
