@@ -114,23 +114,28 @@ struct SettingsView: View {
                     .padding(.vertical, 1)
                     .padding(.horizontal, 20)
                     
-                    
-                    Button("Reset preferences") {
-                        showAlert = true
+                    HStack(alignment: .center) {
+                        Button("Reset preferences") {
+                            showAlert = true
+                        }
+                        .alert(isPresented: $showAlert) {
+                            Alert(
+                                title: Text("Confirm Reset"),
+                                message: Text("Are you sure you want to reset preferences to default?"),
+                                primaryButton: .destructive(Text("Reset")) {
+                                    resetSettings()
+                                },
+                                secondaryButton: .cancel()
+                            )
+                        };
+
+                        Button("Quit app") {
+                            NSApplication.shared.terminate(nil)
+                        }
                     }
                     .padding(.vertical, 1)
                     .padding(.horizontal, 20)
-                    .alert(isPresented: $showAlert) {
-                        Alert(
-                            title: Text("Confirm Reset"),
-                            message: Text("Are you sure you want to reset preferences to default?"),
-                            primaryButton: .destructive(Text("Reset")) {
-                                resetSettings()
-                            },
-                            secondaryButton: .cancel()
-                        )
-                    }
-
+                    .frame(maxWidth: .infinity)
                 }
                 .padding(.horizontal, 10)
                 
