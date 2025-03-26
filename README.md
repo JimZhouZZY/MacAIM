@@ -33,7 +33,7 @@ Please visit the [release page](https://github.com/JimZhouZZY/MacAIM/releases) t
 ## Features/Roadmap
 
 ### User Interface
-- [x] Status bar menu
+- [x] Status bar item
 - [x] Settings window
 - [ ] Menubar
 
@@ -63,6 +63,17 @@ Please visit the [release page](https://github.com/JimZhouZZY/MacAIM/releases) t
 - [x] Debug mode
 - [ ] Automatic updates
 - [ ] Status bar icon image (instead of text)
+
+## Gallery
+### Main Window
+<img width="662" alt="Screenshot 2025-03-26 at 5 14 45 PM" src="https://github.com/user-attachments/assets/dc4606a2-3a6c-4b20-a466-d143254bf07c" />
+
+
+### Settings Window
+<img width="472" alt="Screenshot 2025-03-26 at 6 43 07 PM" src="https://github.com/user-attachments/assets/7244455f-9cc3-4d71-b8a6-1cbc8aba0070" />
+
+### Status Bar Item
+<img width="54" alt="Screenshot 2025-03-26 at 6 48 37 PM" src="https://github.com/user-attachments/assets/21b027b4-1540-4774-8e4c-c27d5bff7853" />
 
 ## License
 MacAIM is available under the [GPL-3.0 license](LICENSE).
