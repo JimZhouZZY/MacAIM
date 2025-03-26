@@ -53,7 +53,6 @@ struct ContentView: View {
         case inputMethod = "sort::InputMethod"
         
         var localized: String {
-            print()
             return NSLocalizedString(self.rawValue, comment: "")
         }
     }
@@ -170,7 +169,6 @@ struct ContentView: View {
                     Picker("Input: ", selection: Binding(
                         get: {
                             if let inputSource = appNameToInputSource[appName]{
-                                print(debugMode)
                                 if let inputMethodName = inputMethodNames[getInputMethodName(inputSource!)] {
                                     return inputMethodName
                                 }
@@ -238,7 +236,7 @@ struct ContentView: View {
                 .padding(.vertical, 8)
             }
             .onAppear {
-                loadInputMethodNames()
+                getAllInputSourceNames()
                 loadApplications()
                 loadInputMethods()
                 getRecognizedInputSources()
@@ -374,22 +372,6 @@ struct ContentView: View {
         }
     }
     
-    func loadInputMethodNames() {
-        // Access the file from the app's bundle
-        if let filePath = Bundle.main.path(forResource: "mapping", ofType: "json") {
-            let fileURL = URL(fileURLWithPath: filePath)
-            
-            do {
-                let data = try Data(contentsOf: fileURL)
-                let decoder = JSONDecoder()
-                inputMethodNames = try decoder.decode([String: String].self, from: data)
-            } catch {
-                print("Failed to load input method names: \(error)")
-            }
-        } else {
-            print("mapping.json not found in bundle.")
-        }
-    }
     
     func switchInputSource(to inputSource: TISInputSource) {
         TISSelectInputSource(inputSource)
@@ -435,6 +417,20 @@ struct ContentView: View {
             UserDefaults.standard.set(true, forKey: "_showStatusBarIcon")
         }
     }
+    
+    func getAllInputSourceNames() {
+        // Iterate over all input sources
+        for inputSource in inputSources {
+            // Get the localized name of the input source
+            if let localizedName = TISGetInputSourceProperty(inputSource, kTISPropertyLocalizedName) {
+                // It is hard to search for this line ...
+                if let name = Unmanaged<CFString>.fromOpaque(localizedName).takeUnretainedValue() as String? {
+                    //print(name)
+                    inputMethodNames[getInputMethodName(inputSource)] = name
+                }
+            }
+        }
+    }
 }
 
 var lastAppBundleIdentifier = ""
@@ -453,4 +449,3 @@ func time() -> String {
     let currentDate = Date()
     return formatter.string(from: currentDate)
 }
-

@@ -173,7 +173,7 @@ struct SettingsView: View {
         .frame(width: 360, height: 450)
         .fixedSize()
         .onAppear {
-            loadInputMethodNames()
+            getAllInputSourceNames()
             getRecognizedInputSources()  // This triggers when the view appears
         }
     }
@@ -232,26 +232,24 @@ struct SettingsView: View {
         }
     }
     
-    func loadInputMethodNames() {
-        // Access the file from the app's bundle
-        if let filePath = Bundle.main.path(forResource: "mapping", ofType: "json") {
-            let fileURL = URL(fileURLWithPath: filePath)
-            
-            do {
-                let data = try Data(contentsOf: fileURL)
-                let decoder = JSONDecoder()
-                inputMethodNames = try decoder.decode([String: String].self, from: data)
-            } catch {
-                print("Failed to load input method names: \(error)")
-            }
-        } else {
-            print("mapping.json not found in bundle.")
-        }
-    }
     func changeLanguage(to language: String) {
         // Update the language setting
         UserDefaults.standard.set([language], forKey: "AppleLanguages")
         UserDefaults.standard.synchronize()
         showLanguageAlert = true
+    }
+    
+    func getAllInputSourceNames() {
+        // Iterate over all input sources
+        for inputSource in inputSources {
+            // Get the localized name of the input source
+            if let localizedName = TISGetInputSourceProperty(inputSource, kTISPropertyLocalizedName) {
+                // It is hard to search for this line ...
+                if let name = Unmanaged<CFString>.fromOpaque(localizedName).takeUnretainedValue() as String? {
+                    //print(name)
+                    inputMethodNames[getInputMethodName(inputSource)] = name
+                }
+            }
+        }
     }
 }
