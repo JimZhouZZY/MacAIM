@@ -8,8 +8,8 @@
 ![Requirements](https://img.shields.io/badge/requirements-macOS%2013%2B-purple)
 [![License](https://img.shields.io/github/license/jimzhouzzy/MacAIM)](LICENSE)
 
-![EN](https://img.shields.io/badge/EN-English-blue)
-![CN](https://img.shields.io/badge/CN-Chinese-blue)
+[![EN](https://img.shields.io/badge/EN-English-blue)](README.md)
+[![CN](https://img.shields.io/badge/CN-Chinese-blue)](doc/README_cn.md)
 
 MacAIM (MacOS Automatic Input Method) is a lightweight utility that seamlessly switches your input method based on the application you’re using. 
 
