@@ -50,6 +50,7 @@ Please visit the [release page](https://github.com/JimZhouZZY/MacAIM/releases) t
 - [x] English
 - [x] Simplified Chinese
 - [ ] French
+- [ ] Germany
 - [ ] Russian
 - [ ] Spanish
 - [ ] Arabic
