@@ -259,10 +259,17 @@ struct SettingsView: View {
                 if let name = Unmanaged<CFString>.fromOpaque(localizedName).takeUnretainedValue() as String? {
                     //print(name)
                     if let cateptr = TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceCategory) {
-                        if let category = Unmanaged<CFString>.fromOpaque(cateptr).takeUnretainedValue() as String? {
+                        if let category = Unmanaged<CFString>.fromOpaque(cateptr).takeUnretainedValue() as CFString? {
                             //print(category)
-                            if category == "TISCategoryKeyboardInputSource"{
-                                inputMethodNames[getInputMethodName(inputSource)] = name
+                            if category == kTISCategoryKeyboardInputSource {
+                                if let typeptr = TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceType) {
+                                    if let type = Unmanaged<CFString>.fromOpaque(typeptr).takeUnretainedValue() as CFString? {
+                                        //print(name, type)
+                                        if type != kTISTypeKeyboardInputMethodModeEnabled {
+                                            inputMethodNames[getInputMethodName(inputSource)] = name
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
