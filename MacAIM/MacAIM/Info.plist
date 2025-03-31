@@ -9,9 +9,9 @@
 	<key>CFBundleIdentifier</key>
 	<string>cn.jimzhou.macaim</string>
 	<key>CFBundleVersion</key>
-	<string>1.1.0-stable</string>
+	<string>1.1.1</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1.0</string>
+	<string>1.1.1</string>
 	<key>CFBundleDisplayName</key>
 	<string>MacAIM</string>
 	<key>CFBundleIconFile</key>

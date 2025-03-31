@@ -29,22 +29,13 @@ struct ContentView: View {
     @AppStorage("debugMode") var debugMode: Bool = false
     @AppStorage("defaultInputSourceName") private var defaultInputSourceName = "None"
     
-    @State private var apps: [String] = []
-    @State private var defaultInputSource: TISInputSource? = nil
-    @State private var currentAppName: String? = nil
     @State private var selectedApp: String?
     @State private var searchText: String = ""  // Search text for filtering
-    @State private var appNameToInputSource: [String: TISInputSource?] = [:]
     @State private var sortOption: SortOption = .name
     @State private var appAddedDates: [String: Date] = [:]
     @State private var isReversed: Bool = false // Is sorting result reverted
-    @State private var inputSources = TISCreateInputSourceList(nil, false).takeRetainedValue() as! [TISInputSource]
-    @State private var recognizedInputSources = TISCreateInputSourceList(nil, false)
-                                                    .takeRetainedValue() as! [TISInputSource]
-    @State private var appNameToBundleIdentifier: [String: String] = [:]
-    @State private var bundleIdentifierToAppName: [String: String] = [:]
-    @State private var inputMethodNames: [String: String] = [:]
     @State private var settingsWindow: NSWindow?
+    @State public var inputSourceManager: InputSourceManager = InputSourceManager()
     
 
     enum SortOption: String, CaseIterable {
@@ -63,17 +54,17 @@ struct ContentView: View {
         
         switch sortOption {
         case .name:
-            sortedApps = apps.sorted()
+            sortedApps = inputSourceManager.apps.sorted()
         case .dateAdded:
-            sortedApps = apps.sorted { (app1, app2) in
+            sortedApps = inputSourceManager.apps.sorted { (app1, app2) in
                 let date1 = appAddedDates[app1] ?? Date.distantPast
                 let date2 = appAddedDates[app2] ?? Date.distantPast
                 return date1 > date2
             }
         case .inputMethod:
-            sortedApps = apps.sorted { (app1, app2) in
-                let input1 = appNameToInputSource[app1].flatMap { inputMethodNames[getInputMethodName($0!)] } ?? ""
-                let input2 = appNameToInputSource[app2].flatMap { inputMethodNames[getInputMethodName($0!)]  } ?? ""
+            sortedApps = inputSourceManager.apps.sorted { (app1, app2) in
+                let input1 = inputSourceManager.getInputSourceForAppName(app1).flatMap { inputSourceManager.getInputSourceNameFromInputSource($0) } ?? ""
+                let input2 = inputSourceManager.getInputSourceForAppName(app2).flatMap { inputSourceManager.getInputSourceNameFromInputSource($0)  } ?? ""
                 return input1 > input2
             }
         }
@@ -141,7 +132,7 @@ struct ContentView: View {
             // List of apps with keyboard navigation
             List(filteredApps, id: \.self, selection: $selectedApp) { appName in
                 HStack {
-                    if let appIcon = getAppIcon(for: appName) {
+                    if let appIcon = getAppIconFromAppName(for: appName) {
                         Image(nsImage: appIcon)
                             .resizable()
                             .frame(width: 48, height: 48) // Adjust icon size
@@ -158,7 +149,7 @@ struct ContentView: View {
                                 .foregroundColor(.gray)
                         }
                         
-                        if debugMode, let bundleIdentifier = appNameToBundleIdentifier[appName] {
+                        if debugMode, let bundleIdentifier = inputSourceManager.appNameToBundleIdentifier[appName] {
                             Text(bundleIdentifier)
                                 .font(.caption)
                                 .foregroundColor(.gray)
@@ -168,12 +159,12 @@ struct ContentView: View {
                     Spacer()
                     Picker("Input: ", selection: Binding(
                         get: {
-                            if let inputSource = appNameToInputSource[appName]{
-                                if let inputMethodName = inputMethodNames[getInputMethodName(inputSource!)] {
+                            if let inputSource = inputSourceManager.appNameToInputSource[appName]{
+                                if let inputMethodName = inputSourceManager.getInputSourceNameFromInputSource(inputSource!) {
                                     return inputMethodName
                                 }
                                 else if debugMode {
-                                    let inputMethod = getInputMethodName(inputSource!)
+                                    let inputMethod = inputSourceManager.getInputSourceNameFromInputSource(inputSource!)!
                                     return inputMethod
                                 }
                             }
@@ -181,40 +172,38 @@ struct ContentView: View {
                         },
                         set: { (newValue: String) in
                             if !debugMode {
-                                if let inputSource = inputSources.first(where: { inputMethodNames[getInputMethodName($0)] == newValue }) {
-                                    appNameToInputSource[appName] = inputSource
+                                if let inputSource = inputSourceManager.inputSources.first(where: { inputSourceManager.getInputSourceNameFromInputSource($0) == newValue }) {
+                                    inputSourceManager.appNameToInputSource[appName] = inputSource
                                 } else {
                                     // Handle case where inputSource is not found
-                                    appNameToInputSource[appName] = nil
+                                    inputSourceManager.appNameToInputSource[appName] = nil
                                 }
-                                saveInputMethods()
+                                inputSourceManager.saveInputMethods()
                             } else {
-                                if let inputSource = inputSources.first(where: { inputMethodNames[getInputMethodName($0)] == newValue }) {
-                                    appNameToInputSource[appName] = inputSource
-                                } else if let inputSource = inputSources.first(where: { getInputMethodName($0) == newValue }) {
-                                    appNameToInputSource[appName] = inputSource
+                                if let inputSource = inputSourceManager.inputSources.first(where: { inputSourceManager.getInputSourceNameFromInputSource($0)  == newValue }) {
+                                    inputSourceManager.appNameToInputSource[appName] = inputSource
+                                } else if let inputSource = inputSourceManager.inputSources.first(where: { inputSourceManager.getInputSourceNameFromInputSource($0)  == newValue }) {
+                                    inputSourceManager.appNameToInputSource[appName] = inputSource
                                 } else {
                                     // Handle case where inputSource is not found
-                                    appNameToInputSource[appName] = nil
+                                    inputSourceManager.appNameToInputSource[appName] = nil
                                 }
-                                saveInputMethods()
+                                inputSourceManager.saveInputMethods()
                             }
                         }
                     )) {
                         if !debugMode {
                             // TODO: sort it
-                            ForEach(recognizedInputSources, id: \.self) { inputSource in
-                                let name = inputMethodNames[getInputMethodName(inputSource)] ??
-                                ("Unrecognized: " + getInputMethodName(inputSource))
+                            ForEach(inputSourceManager.recognizedInputSources, id: \.self) { inputSource in
+                                let name = inputSourceManager.getInputSourceNameFromInputSource(inputSource) ?? ("Unrecognized: " + inputSourceManager.getInputSourceBundleNameFromInputSource(inputSource))
                                 Text(name)
                                     .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
                             }
                             Text("Default: " + defaultInputSourceName)
                                 .tag("Default")
                         } else {
-                            ForEach(inputSources, id: \.self) { inputSource in
-                                let name = inputMethodNames[getInputMethodName(inputSource)] ??
-                                ("Unrecognized: " + getInputMethodName(inputSource))
+                            ForEach(inputSourceManager.inputSources, id: \.self) { inputSource in
+                                let name = inputSourceManager.getInputSourceNameFromInputSource(inputSource) ?? ("Unrecognized: " + inputSourceManager.getInputSourceBundleNameFromInputSource(inputSource))
                                 Text(name)
                                     .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
                             }
@@ -236,148 +225,26 @@ struct ContentView: View {
                 .padding(.vertical, 8)
             }
             .onAppear {
-                getAllInputSourceNames()
-                loadApplications()
-                loadInputMethods()
-                getRecognizedInputSources()
-                mainLoop()
             }
         }
         .padding()
     }
     
-    func mainLoop() {
-        // This method is robust enough, I think
-        // Run the loop in a background thread
-        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
-            let retval: (String?, String?) = getCurrentAppName()
-            let appBundleIdentidier = retval.0 ?? ""
-            if appBundleIdentidier != "" {
-                let lastAppBundleIdentidier = retval.1 ?? ""
-                // Only trigger when the app name changes
-                if !(appBundleIdentidier == lastAppBundleIdentidier) {
-                    let appName = bundleIdentifierToAppName[appBundleIdentidier] ?? appBundleIdentidier
-                    print("User is now using: \(appBundleIdentidier)")
-                    if let inputSource = appNameToInputSource[appName] {
-                        // Is this dispatch neccesarry?
-                        DispatchQueue.main.async {
-                            self.switchInputSource(to: inputSource!)
-                        }
-                    } else if defaultInputSourceName != "None" {
-                        // Ditto
-                        DispatchQueue.main.async {
-                            if let inputSource = inputSources.first(where: { inputMethodNames[getInputMethodName($0)] == defaultInputSourceName }) {
-                                self.switchInputSource(to: inputSource)
-                            }
-                        }
-                    } else {
-                        print("No input method found for \(appName)")
-                    }
-                }
-            } else {
-                print("Unable to get the current app name")
-            }
-        }
-    }
-
-    func formattedDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        return formatter.string(from: date)
-    }
-    
-    func getRecognizedInputSources() {
-        recognizedInputSources.removeAll() // Avoid repeatedly adding
-        for inputSource in inputSources {
-            if inputMethodNames[getInputMethodName(inputSource)] != nil {
-                recognizedInputSources.append(inputSource)
-            }
+    func toggleStatusBarIcon() {
+        let show = UserDefaults.standard.object(forKey: "showStatusBarIcon") as! Bool
+        UserDefaults.standard.set(!show, forKey: "showStatusBarIcon")
+        if show {
+            UserDefaults.standard.set(true, forKey: "_hideStatusBarIcon")
+        } else {
+            UserDefaults.standard.set(true, forKey: "_showStatusBarIcon")
         }
     }
     
-    func getAppIcon(for appName: String) -> NSImage? {
+    func getAppIconFromAppName(for appName: String) -> NSImage? {
         let appPath = "/Applications/\(appName).app"
         return NSWorkspace.shared.icon(forFile: appPath)
     }
     
-    func getInputMethodName(_ inputSource: TISInputSource) -> String {
-        if let inputSourceID = TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceID) {
-            let inputSourceIDString = Unmanaged<CFString>.fromOpaque(inputSourceID).takeUnretainedValue() as String
-            return inputSourceIDString
-        }
-        return "Unknown"
-    }
-    
-    func saveInputMethods() {
-        do {
-            var saveDict: [String: String] = [:]
-            for (appName, inputSource) in appNameToInputSource {
-                if let inputSource = inputSource {
-                    let inputSourceID = getInputMethodName(inputSource)
-                    saveDict[appName] = inputSourceID
-                }
-            }
-            let encoder = JSONEncoder()
-            let data = try encoder.encode(saveDict)
-            UserDefaults.standard.set(data, forKey: "inputMethodToInputSource")
-        } catch {
-            print("Failed to save input methods: \(error)")
-        }
-    }
-    
-    func loadInputMethods() {
-        if let savedData = UserDefaults.standard.data(forKey: "inputMethodToInputSource") {
-            do {
-                let decoder = JSONDecoder()
-                let decodedDict = try decoder.decode([String: String].self, from: savedData)
-                var restoredDict: [String: TISInputSource?] = [:]
-                for (appName, inputSourceID) in decodedDict {
-                    if let inputSource = inputSources.first(where: { getInputMethodName($0) == inputSourceID }) {
-                        restoredDict[appName] = inputSource
-                    }
-                }
-                appNameToInputSource = restoredDict
-            } catch {
-                print("Failed to load input methods: \(error)")
-            }
-        }
-    }
-    
-    func loadApplications() {
-        let fileManager = FileManager.default
-        let applicationsURL = URL(fileURLWithPath: "/Applications")
-        
-        do {
-            let appURLs = try fileManager.contentsOfDirectory(at: applicationsURL, includingPropertiesForKeys: nil)
-            for appURL in appURLs {
-                let attributes = try? fileManager.attributesOfItem(atPath: appURL.path)
-                if let creationDate = attributes?[.creationDate] as? Date {
-                    appAddedDates[appURL.deletingPathExtension().lastPathComponent] = creationDate
-                }
-            }
-            apps = appURLs
-                .filter { $0.pathExtension == "app" }
-                .map { $0.deletingPathExtension().lastPathComponent }
-            
-            for appName in apps {
-                let appPath = "/Applications/\(appName).app"
-                if let bundle = Bundle(url: URL(fileURLWithPath: appPath)), let bundleIdentifier = bundle.bundleIdentifier {
-                    appNameToBundleIdentifier[appName] = bundleIdentifier
-                    bundleIdentifierToAppName[bundleIdentifier] = appName
-                }
-            }
-        } catch {
-            print("Error loading applications: \(error)")
-        }
-    }
-    
-    
-    func switchInputSource(to inputSource: TISInputSource) {
-        TISSelectInputSource(inputSource)
-        return
-    }
-
     func openSettingsWindow() {
         if let window = settingsWindow, window.isVisible {
             window.makeKeyAndOrderFront(nil)
@@ -407,54 +274,6 @@ struct ContentView: View {
             UserDefaults.standard.set(true, forKey: "_updateMenuState")
         }
     }
-    
-    func toggleStatusBarIcon() {
-        let show = UserDefaults.standard.object(forKey: "showStatusBarIcon") as! Bool
-        UserDefaults.standard.set(!show, forKey: "showStatusBarIcon")
-        if show {
-            UserDefaults.standard.set(true, forKey: "_hideStatusBarIcon")
-        } else {
-            UserDefaults.standard.set(true, forKey: "_showStatusBarIcon")
-        }
-    }
-    
-    func getAllInputSourceNames() {
-        // Iterate over all input sources
-        for inputSource in inputSources {
-            // Get the localized name of the input source
-            if let localizedName = TISGetInputSourceProperty(inputSource, kTISPropertyLocalizedName) {
-                // It is hard to search for this line ...
-                if let name = Unmanaged<CFString>.fromOpaque(localizedName).takeUnretainedValue() as String? {
-                    //print(name)
-                    if let cateptr = TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceCategory) {
-                        if let category = Unmanaged<CFString>.fromOpaque(cateptr).takeUnretainedValue() as CFString? {
-                            //print(category)
-                            if category == kTISCategoryKeyboardInputSource {
-                                if let typeptr = TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceType) {
-                                    if let type = Unmanaged<CFString>.fromOpaque(typeptr).takeUnretainedValue() as CFString? {
-                                        //print(name, type)
-                                        if type != kTISTypeKeyboardInputMethodModeEnabled {
-                                            inputMethodNames[getInputMethodName(inputSource)] = name
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-var lastAppBundleIdentifier = ""
-func getCurrentAppName() -> (String, String) {
-    let lastlastAppBundleIdentifier = lastAppBundleIdentifier
-    if let frontApp = NSWorkspace.shared.menuBarOwningApplication {
-        lastAppBundleIdentifier = frontApp.bundleIdentifier ?? ""
-        return (lastAppBundleIdentifier, lastlastAppBundleIdentifier)
-    }
-    return ("", lastlastAppBundleIdentifier)
 }
 
 func time() -> String {
@@ -462,4 +281,11 @@ func time() -> String {
     formatter.dateFormat = "HH:mm:ss"
     let currentDate = Date()
     return formatter.string(from: currentDate)
+}
+
+func formattedDate(_ date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .medium
+    formatter.timeStyle = .none
+    return formatter.string(from: date)
 }
