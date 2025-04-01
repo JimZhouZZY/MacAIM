@@ -49,7 +49,7 @@ Please visit the [release page](https://github.com/JimZhouZZY/MacAIM/releases) t
 ### Languages
 - [x] English
 - [x] Simplified Chinese
-- [ ] French
+- [x] French
 - [ ] Germany
 - [ ] Russian
 - [ ] Spanish
