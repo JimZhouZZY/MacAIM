@@ -24,8 +24,7 @@ import AppKit
 import Cocoa
 
 public class InputSourceManager {
-    @AppStorage("debugMode") var debugMode: Bool = false
-    @AppStorage("defaultInputSourceName") private var defaultInputSourceName = "None"
+    private var config = Config.shared
     
     public var apps: [String] = []
     public var defaultInputSource: TISInputSource? = nil
@@ -33,13 +32,13 @@ public class InputSourceManager {
     public var appNameToInputSource: [String: TISInputSource?] = [:]
     public var appAddedDates: [String: Date] = [:]
     public var isReversed: Bool = false // Is sorting result reverted
-    public var inputSources = TISCreateInputSourceList(nil, false).takeRetainedValue() as! [TISInputSource]
-    public var recognizedInputSources = TISCreateInputSourceList(nil, false)
-                                                    .takeRetainedValue() as! [TISInputSource]
     public var appNameToBundleIdentifier: [String: String] = [:]
     public var bundleIdentifierToAppName: [String: String] = [:]
     public var intputSourceBundleNameToName: [String: String] = [:]
     public var lastAppBundleIdentifier = ""
+    public var inputSources = TISCreateInputSourceList(nil, false).takeRetainedValue() as! [TISInputSource]
+    public var recognizedInputSources = TISCreateInputSourceList(nil, false)
+                                                    .takeRetainedValue() as! [TISInputSource]
     
     init() {
         self.getAllInputSourceNames()
@@ -204,10 +203,10 @@ public class InputSourceManager {
                         DispatchQueue.main.async {
                             self.switchInputSourceTo(inputSource!)
                         }
-                    } else if self.defaultInputSourceName != "None" {
+                    } else if self.config.defaultInputSourceName != "None" {
                         // Ditto
                         DispatchQueue.main.async {
-                            if let inputSource = self.inputSources.first(where: { self.getInputSourceNameFromInputSource($0) == self.defaultInputSourceName }) {
+                            if let inputSource = self.inputSources.first(where: { self.getInputSourceNameFromInputSource($0) == self.config.defaultInputSourceName }) {
                                 self.switchInputSourceTo(inputSource)
                             }
                         }
