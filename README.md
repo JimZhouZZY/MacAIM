@@ -3,7 +3,7 @@
     <h1>MacAIM</h1>
 </div>
 
-[![Release](https://img.shields.io/badge/download-latest-brightgreen)](https://github.com/jimzhouzzy/MacAIM/releases/latest)
+[![Release](https://img.shields.io/github/release/jimzhouzzy/MacAIM.svg?label=Release)](https://github.com/jimzhouzzy/MacAIM/releases/latest)
 ![Platform](https://img.shields.io/badge/platform-macOS-blue)
 ![Requirements](https://img.shields.io/badge/requirements-macOS%2013%2B-purple)
 [![License](https://img.shields.io/github/license/jimzhouzzy/MacAIM)](LICENSE)
