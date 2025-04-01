@@ -219,7 +219,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let menu = NSMenu()
             
             // Add "Dashboard" option to the menu
-            let showWindowItem = NSMenuItem(title: "Dashboard", action: #selector(showWindow), keyEquivalent: "d")
+            let showWindowItem = NSMenuItem(title: String(format: NSLocalizedString("Dashboard", comment: "")), action: #selector(showWindow), keyEquivalent: "d")
             menu.addItem(showWindowItem)
             // Set action for the status bar button to show dashboard
             statusBarItem.button?.action = #selector(showWindow)
@@ -229,30 +229,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Check if the user wants the app to start with the system
             registerStartAtLogin(config.startAtLogin)
             // Add "Start with System" checkbox to the menu
-            let startWithSystemItem = NSMenuItem(title: "Start at login", action: #selector(toggleStartAtLogin), keyEquivalent: "a")
+            let startWithSystemItem = NSMenuItem(title: String(format: NSLocalizedString("Start at login", comment: "")), action: #selector(toggleStartAtLogin), keyEquivalent: "a")
             startWithSystemItem.state = config.startAtLogin ? .on : .off
             menu.addItem(startWithSystemItem)
             
             // Add "Silent start" checkbox to the menu
             // silentStart have been set by previous code
-            let silentStartItem = NSMenuItem(title: "Silent start", action: #selector(toggleSilentStart), keyEquivalent: "s")
+            let silentStartItem = NSMenuItem(title: String(format: NSLocalizedString("Silent start", comment: "")), action: #selector(toggleSilentStart), keyEquivalent: "s")
             silentStartItem.state = config.silentStart ? .on : .off
             menu.addItem(silentStartItem)
             
             // Add "Status icon" checkbox to the menu
-            let showStatusBarIconItem = NSMenuItem(title: "Status icon", action: #selector(toggleShowStatusBarIcon), keyEquivalent: "i")
+            let showStatusBarIconItem = NSMenuItem(title: String(format: NSLocalizedString("Status icon", comment: "")), action: #selector(toggleShowStatusBarIcon), keyEquivalent: "i")
             showStatusBarIconItem.state = config.showStatusBarIcon ? .on : .off
             menu.addItem(showStatusBarIconItem)
             
             // Add "Debug mode" checkbox to the menu
-            let debugModeItem = NSMenuItem(title: "Debug mode", action: #selector(toggleDebugMode), keyEquivalent: "")
+            let debugModeItem = NSMenuItem(title: String(format: NSLocalizedString("Debug mode", comment: "")), action: #selector(toggleDebugMode), keyEquivalent: "")
             debugModeItem.state = config.debugMode ? .on : .off
             menu.addItem(debugModeItem)
             
             menu.addItem(.separator())
             
             // Add "Quit" option to the menu
-            let quitItem = NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q")
+            let quitItem = NSMenuItem(title: String(format: NSLocalizedString("Quit", comment: "")), action: #selector(quitApp), keyEquivalent: "q")
             menu.addItem(quitItem)
             
             // Finally

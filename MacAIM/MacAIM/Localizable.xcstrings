@@ -78,6 +78,16 @@
         }
       }
     },
+    "Dashboard" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "控制面板"
+          }
+        }
+      }
+    },
     "Debug mode" : {
       "localizations" : {
         "zh-Hans" : {
@@ -149,6 +159,17 @@
         }
       }
     },
+    "Key" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "键值"
+          }
+        }
+      }
+    },
     "Language Changed" : {
       "localizations" : {
         "zh-Hans" : {
@@ -205,6 +226,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请重启 App 以使语言切换生效。"
+          }
+        }
+      }
+    },
+    "Quit" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "退出"
           }
         }
       }
