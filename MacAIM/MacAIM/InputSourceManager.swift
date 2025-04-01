@@ -34,7 +34,7 @@ public class InputSourceManager {
     public var isReversed: Bool = false // Is sorting result reverted
     public var appNameToBundleIdentifier: [String: String] = [:]
     public var bundleIdentifierToAppName: [String: String] = [:]
-    public var intputSourceBundleNameToName: [String: String] = [:]
+    public var inputSourceBundleNameToName: [String: String] = [:]
     public var lastAppBundleIdentifier = ""
     public var inputSources = TISCreateInputSourceList(nil, false).takeRetainedValue() as! [TISInputSource]
     public var recognizedInputSources = TISCreateInputSourceList(nil, false)
@@ -51,7 +51,7 @@ public class InputSourceManager {
     func getRecognizedInputSources() {
         recognizedInputSources.removeAll() // Avoid repeatedly adding
         for inputSource in inputSources {
-            if intputSourceBundleNameToName[getInputSourceBundleNameFromInputSource(inputSource)] != nil {
+            if inputSourceBundleNameToName[getInputSourceBundleNameFromInputSource(inputSource)] != nil {
                 recognizedInputSources.append(inputSource)
             }
         }
@@ -69,7 +69,7 @@ public class InputSourceManager {
     }
     
     func getInputSourceNameFromBundleName(_ bundleName: String) -> String? {
-        return intputSourceBundleNameToName[bundleName]
+        return inputSourceBundleNameToName[bundleName]
     }
     
     func getInputSourceBundleNameFromInputSource(_ inputSource: TISInputSource) -> String {
@@ -91,14 +91,14 @@ public class InputSourceManager {
             }
             let encoder = JSONEncoder()
             let data = try encoder.encode(saveDict)
-            UserDefaults.standard.set(data, forKey: "inputMethodToInputSource")
+            UserDefaults.standard.set(data, forKey: "appNameToInputSource")
         } catch {
             print("Failed to save input methods: \(error)")
         }
     }
     
     func loadInputSources() {
-        if let savedData = UserDefaults.standard.data(forKey: "inputMethodToInputSource") {
+        if let savedData = UserDefaults.standard.data(forKey: "appNameToInputSource") {
             do {
                 let decoder = JSONDecoder()
                 let decodedDict = try decoder.decode([String: String].self, from: savedData)
@@ -165,7 +165,7 @@ public class InputSourceManager {
                                     if let type = Unmanaged<CFString>.fromOpaque(typeptr).takeUnretainedValue() as CFString? {
                                         //print(name, type)
                                         if type != kTISTypeKeyboardInputMethodModeEnabled {
-                                            intputSourceBundleNameToName[getInputSourceBundleNameFromInputSource(inputSource)] = name
+                                            inputSourceBundleNameToName[getInputSourceBundleNameFromInputSource(inputSource)] = name
                                         }
                                     }
                                 }

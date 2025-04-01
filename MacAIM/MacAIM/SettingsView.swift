@@ -61,6 +61,7 @@ struct SettingsView: View {
                     Picker("Select Language", selection: config.$selectedLanguage) {
                         Text("English").tag("en")
                         Text("Chinese").tag("zh")
+                        Text("French").tag("fr")
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .padding(.vertical, 3)

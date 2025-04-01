@@ -30,9 +30,13 @@ struct ContentView: View {
     @State private var selectedApp: String?
     @State private var searchText: String = ""  // Search text for filtering
     @State private var sortOption: SortOption = .name
-    @State private var appAddedDates: [String: Date] = [:]
+    @State private var appAddedDates: [String : Date] = [:]
     @State private var isReversed: Bool = false // Is sorting result reverted
     @State private var settingsWindow: NSWindow?
+    
+    // This state variable is for updating input source selection name on the GUI
+    // TODO: find a better solution
+    @State private var appNameToInputSource: [String : TISInputSource?] = [:]
 
     enum SortOption: String, CaseIterable {
         case name = "sort::Name"
@@ -155,7 +159,7 @@ struct ContentView: View {
                     Spacer()
                     Picker("Input: ", selection: Binding(
                         get: {
-                            if let inputSource = inputSourceManager.appNameToInputSource[appName]{
+                            if let inputSource = appNameToInputSource[appName]{
                                 if let inputMethodName = inputSourceManager.getInputSourceNameFromInputSource(inputSource!) {
                                     return inputMethodName
                                 }
@@ -169,19 +173,24 @@ struct ContentView: View {
                         set: { (newValue: String) in
                             if !config.debugMode {
                                 if let inputSource = inputSourceManager.inputSources.first(where: { inputSourceManager.getInputSourceNameFromInputSource($0) == newValue }) {
+                                    appNameToInputSource[appName] = inputSource
                                     inputSourceManager.appNameToInputSource[appName] = inputSource
                                 } else {
                                     // Handle case where inputSource is not found
+                                    appNameToInputSource[appName] = nil
                                     inputSourceManager.appNameToInputSource[appName] = nil
                                 }
                                 inputSourceManager.saveInputMethods()
                             } else {
                                 if let inputSource = inputSourceManager.inputSources.first(where: { inputSourceManager.getInputSourceNameFromInputSource($0)  == newValue }) {
+                                    appNameToInputSource[appName] = inputSource
                                     inputSourceManager.appNameToInputSource[appName] = inputSource
                                 } else if let inputSource = inputSourceManager.inputSources.first(where: { inputSourceManager.getInputSourceNameFromInputSource($0)  == newValue }) {
+                                    appNameToInputSource[appName] = inputSource
                                     inputSourceManager.appNameToInputSource[appName] = inputSource
                                 } else {
                                     // Handle case where inputSource is not found
+                                    appNameToInputSource[appName] = nil
                                     inputSourceManager.appNameToInputSource[appName] = nil
                                 }
                                 inputSourceManager.saveInputMethods()
@@ -221,6 +230,7 @@ struct ContentView: View {
                 .padding(.vertical, 8)
             }
             .onAppear {
+                appNameToInputSource = inputSourceManager.appNameToInputSource
             }
         }
         .padding()
