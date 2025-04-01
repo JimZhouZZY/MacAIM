@@ -26,17 +26,13 @@ import Cocoa
 struct ContentView: View {
     var settingsWindowController: NSWindowController?
     
-    @AppStorage("debugMode") var debugMode: Bool = false
-    @AppStorage("defaultInputSourceName") private var defaultInputSourceName = "None"
-    
+    @State private var config = Config.shared
     @State private var selectedApp: String?
     @State private var searchText: String = ""  // Search text for filtering
     @State private var sortOption: SortOption = .name
     @State private var appAddedDates: [String: Date] = [:]
     @State private var isReversed: Bool = false // Is sorting result reverted
     @State private var settingsWindow: NSWindow?
-    @State public var inputSourceManager: InputSourceManager = InputSourceManager()
-    
 
     enum SortOption: String, CaseIterable {
         case name = "sort::Name"
@@ -149,7 +145,7 @@ struct ContentView: View {
                                 .foregroundColor(.gray)
                         }
                         
-                        if debugMode, let bundleIdentifier = inputSourceManager.appNameToBundleIdentifier[appName] {
+                        if config.debugMode, let bundleIdentifier = inputSourceManager.appNameToBundleIdentifier[appName] {
                             Text(bundleIdentifier)
                                 .font(.caption)
                                 .foregroundColor(.gray)
@@ -163,7 +159,7 @@ struct ContentView: View {
                                 if let inputMethodName = inputSourceManager.getInputSourceNameFromInputSource(inputSource!) {
                                     return inputMethodName
                                 }
-                                else if debugMode {
+                                else if config.debugMode {
                                     let inputMethod = inputSourceManager.getInputSourceNameFromInputSource(inputSource!)!
                                     return inputMethod
                                 }
@@ -171,7 +167,7 @@ struct ContentView: View {
                             return "Default"  // Return a default value when no input method is available
                         },
                         set: { (newValue: String) in
-                            if !debugMode {
+                            if !config.debugMode {
                                 if let inputSource = inputSourceManager.inputSources.first(where: { inputSourceManager.getInputSourceNameFromInputSource($0) == newValue }) {
                                     inputSourceManager.appNameToInputSource[appName] = inputSource
                                 } else {
@@ -192,14 +188,14 @@ struct ContentView: View {
                             }
                         }
                     )) {
-                        if !debugMode {
+                        if !config.debugMode {
                             // TODO: sort it
                             ForEach(inputSourceManager.recognizedInputSources, id: \.self) { inputSource in
                                 let name = inputSourceManager.getInputSourceNameFromInputSource(inputSource) ?? ("Unrecognized: " + inputSourceManager.getInputSourceBundleNameFromInputSource(inputSource))
                                 Text(name)
                                     .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
                             }
-                            Text("Default: " + defaultInputSourceName)
+                            Text("Default: " + config.defaultInputSourceName)
                                 .tag("Default")
                         } else {
                             ForEach(inputSourceManager.inputSources, id: \.self) { inputSource in
@@ -207,7 +203,7 @@ struct ContentView: View {
                                 Text(name)
                                     .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
                             }
-                            Text("Default: " + defaultInputSourceName)
+                            Text("Default: " + config.defaultInputSourceName)
                                 .tag("Default")
                         }
                     }

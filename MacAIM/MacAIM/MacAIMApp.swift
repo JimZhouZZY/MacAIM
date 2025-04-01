@@ -29,7 +29,7 @@ struct AutomaticInputSwitchApp: App {
         let runningApps = NSWorkspace.shared.runningApplications.filter { $0.bundleIdentifier == Bundle.main.bundleIdentifier }
         if runningApps.count > 1 {
             // If another instance is running, bring its window to the front
-            UserDefaults.standard.set(true, forKey: "_showDashboard")
+            UserDefaults.standard.set(true, forKey: action_showDashboardKey)
             
             // If there is already an instance running, exit the new one
             NSApplication.shared.terminate(nil)

@@ -198,8 +198,7 @@
         }
       }
     },
-    "Quit" : {
-      "extractionState" : "stale",
+    "Quit app" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -208,9 +207,6 @@
           }
         }
       }
-    },
-    "Quit app" : {
-
     },
     "Report Issues" : {
       "localizations" : {

@@ -25,50 +25,49 @@ import Cocoa
 import SwiftData
 
 struct SettingsView: View {
-    @AppStorage("startAtLogin") private var startAtLogin = false
-    @AppStorage("silentStart") private var silentStart = false
-    @AppStorage("debugMode") private var debugMode = false
-    @AppStorage("showStatusBarIcon") private var showStatusBarIcon = true
-    @AppStorage("defaultInputSourceName") private var defaultInputSourceName = "None"
-    @AppStorage("selectedLanguage") private var selectedLanguage = "en"
+    @StateObject private var config = Config.shared
     
-    @State private var inputSources = TISCreateInputSourceList(nil, false).takeRetainedValue() as! [TISInputSource]
-    @State private var recognizedInputSources = TISCreateInputSourceList(nil, false)
-                                                    .takeRetainedValue() as! [TISInputSource]
     @State private var showAlert = false
     @State private var showLanguageAlert = false
     @State private var resetConfirmed = false
-    @State private var inputMethodNames: [String: String]  = [:]
 
     var body: some View {
         NavigationView {
             List {
                 Section(header: Text("General Preferences").font(.headline)) {
-                    Toggle("Start at login", isOn: $startAtLogin)
+                    Toggle("Start at login", isOn: config.$startAtLogin)
                         .padding(.vertical, 3)
                         .padding(.horizontal, 20)
-                    Toggle("Silent start", isOn: $silentStart)
+                    Toggle("Silent start", isOn: config.$silentStart)
                         .padding(.vertical, 3)
                         .padding(.horizontal, 20)
-                    Toggle("Debug mode", isOn: $debugMode)
+                    Toggle("Debug mode", isOn: config.$debugMode)
                         .padding(.vertical, 3)
                         .padding(.horizontal, 20)
-                    Toggle("Status icon", isOn: $showStatusBarIcon)
+                    Toggle("Status icon", isOn: config.$showStatusBarIcon)
                         .padding(.vertical, 3)
                         .padding(.horizontal, 20)
+                        .onChange(of: config.showStatusBarIcon) { newValue in
+                            if config.showStatusBarIcon {
+                                config.action_showStatusBarIcon = true
+                            } else {
+                                config.action_hideStatusBarIcon = true
+                            }
+                        }
                 }
                 .padding(.horizontal, 10)
                 
                 Section(header: Text("Language Preferences").font(.headline)) {
-                    Picker("Select Language", selection: $selectedLanguage) {
+                    Picker("Select Language", selection: config.$selectedLanguage) {
                         Text("English").tag("en")
                         Text("Chinese").tag("zh")
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .padding(.vertical, 3)
                     .padding(.horizontal, 20)
-                    .onChange(of: selectedLanguage) { newValue in
-                        changeLanguage(to: newValue)
+                    .onChange(of: config.selectedLanguage) { newValue in
+                        config.changeLanguage(to: newValue)
+                        showLanguageAlert = true
                     }
                     .alert(isPresented: $showLanguageAlert) {
                         Alert(
@@ -83,32 +82,32 @@ struct SettingsView: View {
                 Section(header: Text("Runtime").font(.headline)) {
                     Picker("Default input method", selection: Binding(
                         get: {
-                            return defaultInputSourceName
+                            return config.defaultInputSourceName
                         },
                         set: { (newValue: String) in
-                            UserDefaults.standard.set(newValue, forKey: "defaultInputSourceName")
+                            config.defaultInputSourceName = newValue
                         }
                     )) {
-                        if !debugMode {
-                            ForEach(recognizedInputSources, id: \.self) { inputSource in
-                                let name = inputMethodNames[getInputMethodName(inputSource)] ??
-                                ("Unrecognized: " + getInputMethodName(inputSource))
+                        if !config.debugMode {
+                            ForEach(inputSourceManager.recognizedInputSources, id: \.self) { inputSource in
+                                let name = inputSourceManager.getInputSourceNameFromInputSource(inputSource) ??
+                                    ("Unrecognized: " + inputSourceManager.getInputSourceBundleNameFromInputSource(inputSource))
                                 Text(name)
                                     .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
                             }
                             Text("None")
                                 .tag("None")
                         } else {
-                            ForEach(recognizedInputSources, id: \.self) { inputSource in
-                                let name = inputMethodNames[getInputMethodName(inputSource)] ??
-                                ("Unrecognized: " + getInputMethodName(inputSource))
+                            ForEach(inputSourceManager.recognizedInputSources, id: \.self) { inputSource in
+                                let name = inputSourceManager.getInputSourceNameFromInputSource(inputSource) ??
+                                    ("Unrecognized: " + inputSourceManager.getInputSourceBundleNameFromInputSource(inputSource))
                                 Text(name)
                                     .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
                             }
-                            ForEach(inputSources, id: \.self) { inputSource in
-                                if !recognizedInputSources.contains(inputSource) {
-                                    let name = inputMethodNames[getInputMethodName(inputSource)] ??
-                                    ("Unrecognized: " + getInputMethodName(inputSource))
+                            ForEach(inputSourceManager.inputSources, id: \.self) { inputSource in
+                                if !inputSourceManager.recognizedInputSources.contains(inputSource) {
+                                    let name = inputSourceManager.getInputSourceNameFromInputSource(inputSource) ??
+                                        ("Unrecognized: " + inputSourceManager.getInputSourceBundleNameFromInputSource(inputSource))
                                     Text(name)
                                         .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
                                 }
@@ -130,7 +129,7 @@ struct SettingsView: View {
                                 title: Text("Confirm Reset"),
                                 message: Text("Are you sure you want to reset preferences to default?"),
                                 primaryButton: .destructive(Text("Reset")) {
-                                    resetSettings()
+                                    config.reset()
                                 },
                                 secondaryButton: .cancel()
                             )
@@ -184,97 +183,6 @@ struct SettingsView: View {
         .frame(width: 360, height: 450)
         .fixedSize()
         .onAppear {
-            getAllInputSourceNames()
-            getRecognizedInputSources()  // This triggers when the view appears
-        }
-    }
-    
-    func getInputMethodName(_ inputSource: TISInputSource) -> String {
-        if let inputSourceID = TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceID) {
-            let inputSourceIDString = Unmanaged<CFString>.fromOpaque(inputSourceID).takeUnretainedValue() as String
-            return inputSourceIDString
-        }
-        return "Unknown"
-    }
-    
-    func getRecognizedInputSources() {
-        recognizedInputSources.removeAll() // Avoid repeatedly adding
-        for inputSource in inputSources {
-            if inputMethodNames[getInputMethodName(inputSource)] != nil {
-                recognizedInputSources.append(inputSource)
-            }
-        }
-    }
-    
-    func resetSettings() {
-        do {
-            print("Using default settings")
-            UserDefaults.standard.set(false, forKey: "useDefault")
-            UserDefaults.standard.set(false, forKey: "silentStart")
-            UserDefaults.standard.set(false, forKey: "startAtLogin")
-            UserDefaults.standard.set(false, forKey: "debugMode")
-            UserDefaults.standard.set(true, forKey: "showStatusBarIcon")
-            UserDefaults.standard.set("None", forKey: "defaultInputSourceName")
-            UserDefaults.standard.set(false, forKey: "_showDashboard")
-            UserDefaults.standard.set(false, forKey: "_showStatusBarIcon")
-            UserDefaults.standard.set(false, forKey: "_hideStatusBarIcon")
-            UserDefaults.standard.set(false, forKey: "_updateMenuState")
-            UserDefaults.standard.set(false, forKey: "_clean")
-            var saveDict: [String: String] = [:]
-            let fileManager = FileManager.default
-            var apps: [String] = []
-            let applicationsURL = URL(fileURLWithPath: "/Applications")
-            do {
-                let appURLs = try fileManager.contentsOfDirectory(at: applicationsURL, includingPropertiesForKeys: nil)
-                apps = appURLs
-                    .filter { $0.pathExtension == "app" }
-                    .map { $0.deletingPathExtension().lastPathComponent }
-            } catch {
-                print("Error loading applications: \(error)")
-            }
-            for appName in apps {
-                saveDict[appName] = "Default"
-            }
-            let encoder = JSONEncoder()
-            let data = try encoder.encode(saveDict)
-            UserDefaults.standard.set(data, forKey: "appNameToInputSource")
-        } catch {
-            print("Failed to init default settings: \(error)")
-        }
-    }
-    
-    func changeLanguage(to language: String) {
-        // Update the language setting
-        UserDefaults.standard.set([language], forKey: "AppleLanguages")
-        UserDefaults.standard.synchronize()
-        showLanguageAlert = true
-    }
-    
-    func getAllInputSourceNames() {
-        // Iterate over all input sources
-        for inputSource in inputSources {
-            // Get the localized name of the input source
-            if let localizedName = TISGetInputSourceProperty(inputSource, kTISPropertyLocalizedName) {
-                // It is hard to search for this line ...
-                if let name = Unmanaged<CFString>.fromOpaque(localizedName).takeUnretainedValue() as String? {
-                    //print(name)
-                    if let cateptr = TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceCategory) {
-                        if let category = Unmanaged<CFString>.fromOpaque(cateptr).takeUnretainedValue() as CFString? {
-                            //print(category)
-                            if category == kTISCategoryKeyboardInputSource {
-                                if let typeptr = TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceType) {
-                                    if let type = Unmanaged<CFString>.fromOpaque(typeptr).takeUnretainedValue() as CFString? {
-                                        //print(name, type)
-                                        if type != kTISTypeKeyboardInputMethodModeEnabled {
-                                            inputMethodNames[getInputMethodName(inputSource)] = name
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }
