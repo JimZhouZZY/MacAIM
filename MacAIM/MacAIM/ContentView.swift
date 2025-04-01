@@ -195,7 +195,7 @@ struct ContentView: View {
                                 Text(name)
                                     .tag(name.replacingOccurrences(of: "Unrecognized: ", with: ""))
                             }
-                            Text("Default: " + config.defaultInputSourceName)
+                            Text(String(format: NSLocalizedString("Default: %@", comment: ""), String(format: NSLocalizedString(config.defaultInputSourceName, comment: ""))))
                                 .tag("Default")
                         } else {
                             ForEach(inputSourceManager.inputSources, id: \.self) { inputSource in

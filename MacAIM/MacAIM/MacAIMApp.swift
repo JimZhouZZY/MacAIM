@@ -36,6 +36,13 @@ struct AutomaticInputSwitchApp: App {
         }
     }
     
+    func cleanPreferences() {
+        // clean preferences files
+        // ONLY call at development
+        UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
+        UserDefaults.standard.synchronize()  // Ensure changes are written immediately
+    }
+    
     var body: some Scene {
         Settings {
         }
