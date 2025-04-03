@@ -257,7 +257,11 @@ struct ContentView: View {
             return
         }
 
-        let settingsView = SettingsView()
+        let settingsView = SettingsView().onAppear {
+            if let window = NSApp.windows.first(where: { $0.isKeyWindow }) {
+                window.title = String(format: NSLocalizedString("Settings", comment: ""))  // Change the window title here
+            }
+        }
 
         let newWindow = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 350, height: 250),

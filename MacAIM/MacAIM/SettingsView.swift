@@ -62,6 +62,7 @@ struct SettingsView: View {
                         Text("English").tag("en")
                         Text("Chinese").tag("zh")
                         Text("French").tag("fr")
+                        // Text("DE").tag("de")
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .padding(.vertical, 3)

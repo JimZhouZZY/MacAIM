@@ -3,6 +3,12 @@
   "strings" : {
     "About" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Über"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19,6 +25,12 @@
     },
     "Added on: %@" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hinzugefügt am: %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35,6 +47,12 @@
     },
     "Are you sure you want to reset preferences to default?" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sind Sie sicher, dass Sie die Einstellungen auf die Standardwerte zurücksetzen möchten?"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -52,6 +70,12 @@
     "Automatic Input Switch" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatische Eingabeschaltung"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -74,6 +98,12 @@
     },
     "Chinese" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chinese"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -90,6 +120,12 @@
     },
     "Confirm Reset" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zurücksetzen bestätigen"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -106,6 +142,12 @@
     },
     "Contact" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakt"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -122,6 +164,12 @@
     },
     "Dashboard" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Armaturenbrett"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -138,10 +186,16 @@
     },
     "Debug mode" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debug-Modus"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mode débogage"
+            "value" : "Mode debug"
           }
         },
         "zh-Hans" : {
@@ -154,6 +208,12 @@
     },
     "Default input method" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard-Eingabemethode"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -171,6 +231,12 @@
     "Default: %@" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard: %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -187,6 +253,12 @@
     },
     "English" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "English"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -202,10 +274,23 @@
       }
     },
     "French" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "French"
+          }
+        }
+      }
     },
     "General Preferences" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allgemeine Einstellungen"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -222,6 +307,12 @@
     },
     "Input: " : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eingabe"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -238,6 +329,12 @@
     },
     "Jim Zhou - jimzhouzzy@gmail.com" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jim Zhou - jimzhouzzy@gmail.com"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -255,6 +352,12 @@
     "Key" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schlüssel"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -271,6 +374,12 @@
     },
     "Language Changed" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprache geändert"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -287,10 +396,16 @@
     },
     "Language Preferences" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spracheinstellungen"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Préférences de langue"
+            "value" : "Langue préférée"
           }
         },
         "zh-Hans" : {
@@ -303,6 +418,12 @@
     },
     "MacAIM Version %@" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacAIM Version %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -319,6 +440,12 @@
     },
     "None" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -335,6 +462,12 @@
     },
     "OK" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -351,6 +484,12 @@
     },
     "Please restart the app for the language change to take effect." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte starten Sie die App neu, damit die Sprachänderung wirksam wird."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -367,6 +506,12 @@
     },
     "Quit" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beenden"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -383,6 +528,12 @@
     },
     "Quit app" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Beenden"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -399,6 +550,12 @@
     },
     "Report Issues" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probleme melden"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -415,6 +572,12 @@
     },
     "Reset" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zurücksetzen"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -431,6 +594,12 @@
     },
     "Reset preferences" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen zurücksetzen"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -447,6 +616,12 @@
     },
     "Reversed" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umgekehrt"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -463,6 +638,12 @@
     },
     "Runtime" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laufzeit"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -479,6 +660,12 @@
     },
     "Search for an app" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach einer App suchen"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -495,6 +682,12 @@
     },
     "Select Language" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprache auswählen"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -511,6 +704,12 @@
     },
     "Settings" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -527,6 +726,12 @@
     },
     "Silent start" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stiller Start"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -543,6 +748,12 @@
     },
     "Sort by: " : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sortieren nach:"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -560,6 +771,12 @@
     "sort::DateAdded" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hinzugefügt am"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -583,6 +800,12 @@
     "sort::InputMethod" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eingabemethode"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -606,6 +829,12 @@
     "sort::Name" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -628,6 +857,12 @@
     },
     "Start at login" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beim Login starten"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -644,6 +879,12 @@
     },
     "Status icon" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Status-Symbol"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
