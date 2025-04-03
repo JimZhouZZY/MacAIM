@@ -3,13 +3,14 @@
     <h1>MacAIM</h1>
 </div>
 
-[![Download](https://img.shields.io/badge/download-latest-brightgreen)](https://github.com/jimzhouzzy/MacAIM/releases/latest)
+[![Release](https://img.shields.io/github/release/jimzhouzzy/MacAIM.svg?label=Release)](https://github.com/jimzhouzzy/MacAIM/releases/latest)
 ![Platform](https://img.shields.io/badge/platform-macOS-blue)
 ![Requirements](https://img.shields.io/badge/requirements-macOS%2013%2B-purple)
 [![License](https://img.shields.io/github/license/jimzhouzzy/MacAIM)](/LICENSE)
+![Downloads](https://img.shields.io/github/downloads/jimzhouzzy/MacAIM/total?label=Downloads)
 
-[![EN](https://img.shields.io/badge/EN-English-blue)](/README.md)
-[![CN](https://img.shields.io/badge/CN-Chinese-blue)](/doc/README_cn.md)
+[![EN](https://img.shields.io/badge/EN-English-yellow)](/README.md)
+[![CN](https://img.shields.io/badge/CN-Chinese-orange)](/doc/README_cn.md)
 
 MacAIM是一个轻量级工具，它会根据你正在使用的应用程序自动切换输入法。
 
@@ -49,7 +50,7 @@ MacAIM是一个轻量级工具，它会根据你正在使用的应用程序自�
 ### 语言
 - [x] 英语
 - [x] 简体中文
-- [ ] 法语
+- [x] 法语
 - [ ] 德语
 - [ ] 俄语
 - [ ] 西班牙语
